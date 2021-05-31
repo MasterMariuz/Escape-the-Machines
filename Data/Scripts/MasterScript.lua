@@ -42,8 +42,9 @@ end
 
 function initializeRoom (i)
 	local m 
-	room[i] = {length = 0, depth = 0, spawnX = 0, spawnZ = 0, tile = {} , linkedRoom = {}, active = nil}
-	for m=0,10 do
+	room[i] = {length = 0, depth = 0, spawnX = 0, spawnZ = 0, tile = {} , linkedRoom = {}, spawnParentConnector = false, active, activeConnector}
+	--max linked rooms limit
+	for m=0,20 do
 		room[i].linkedRoom[m]=0
 	end
 end
@@ -52,7 +53,6 @@ end
 function GenerateLevel() -- Executes the calculations for the values of the new floor
 
 	-- declare initial randomized values that will build the entire floor
-	local chanceExtraRoute = rand:GetInteger(0,100)
 	local timer = 0;
 	--spawn initial Room
 	initializeRoom(1)
@@ -65,30 +65,31 @@ function GenerateLevel() -- Executes the calculations for the values of the new 
 
 	--create main route until all room blocks have been used up
 	for m=0, mainRooms do
-		CreateRoom("mainRoute",room)
+		CreateRoom("mainRoute")
 	end
 	
-	
 	--create final room
-	CreateRoom("finalRoom",room)
+	CreateRoom("finalRoom")
 	
 	--main route has been created. Now, we'll create alternate routes
 	for m=0, extraRooms do
-		CreateRoom("extraRoom",room)
+		CreateRoom("extraRoom")
 	end
+	SpawnLevel()
+	
+	
 end --ends the function
 
 
 
 
 
-function CreateRoom(type,room)
+function CreateRoom(type)
 	
+	Task.Wait()
 	roomCount = roomCount + 1
 	local i = roomCount
 	initializeRoom(i)
-	Task.Wait()
-	
 	local spawnX = 0 
 	local spawnZ = 0
 	local newConnectorX = 0
@@ -115,118 +116,116 @@ function CreateRoom(type,room)
 			randomDirection = rand:GetInteger(1,4) -- will find a direction to spawn a new room relative to the first room i
 			counter = counter + 1
 			
-			if(type=="mainRoute" or type=="finalRoom") then
-				k = i - 1 - math.floor(counter / 4) -- will check x loops before moving to a previous room (default:20)
-			elseif(type=="extraRoom") then
-				k = rand:GetInteger(2,roomCount-1)
+		if(type=="mainRoute" or type=="finalRoom") then
+			k = i - 1 - math.floor(counter / 4) -- will check x loops before moving to a previous room (default:20)
+		elseif(type=="extraRoom") then
+			k = rand:GetInteger(2,roomCount-1)
+		end
+
+		if(randomDirection == 1) then -- spawn on direction [1,0]
+			spawnX = room[k].spawnX + room[k].length +1
+			minZ = room[k].spawnZ - newDepth +1
+			maxZ = room[k].spawnZ + room[k].depth -2
+			spawnZ = rand:GetInteger(minZ,maxZ)
+			roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
+			if(roomPositionValidation == true) then
+				for o=0,newDepth-1 do
+					for p=0,room[k].depth-1 do
+						if(spawnZ+o == room[k].spawnZ+p) then
+							--print("room[i].spawnZ:"..room[i].spawnZ.." o:"..o.. " room[k].spawnZ:"..room[k].spawnZ.." p:"..p)
+							room[i].parentRoomNumber = k
+							room[i].tile[0][o].isConnector = true
+							room[k].tile[room[k].length-1][p].isConnector = true
+							room[i].parentDirection = "south"
+							room[i].tile[0][o].parentDirection = "south"
+							room[i].tile[0][o].direction.south = true
+							room[k].tile[room[k].length-1][p].direction.north = true
+						end
+					end
+				end
 			end
 
-			if(randomDirection == 1) then -- spawn on direction [1,0]
-				spawnX = room[k].spawnX + room[k].length +1
-				minZ = room[k].spawnZ - newDepth +1
-				maxZ = room[k].spawnZ + room[k].depth -2
-				spawnZ = rand:GetInteger(minZ,maxZ)
-				roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
-				if(roomPositionValidation == true) then
-					for o=0,newDepth-1 do
-						for p=0,room[k].depth-1 do
-							if(spawnZ+o == room[k].spawnZ+p) then
-								--print("room[i].spawnZ:"..room[i].spawnZ.." o:"..o.. " room[k].spawnZ:"..room[k].spawnZ.." p:"..p)
-								room[i].parentRoomNumber = k
-								room[i].tile[0][o].isConnector = true
-								room[k].tile[room[k].length-1][p].isConnector = true
-								room[i].parentDirection = "south"
-								room[i].tile[0][o].parentDirection = "south"
-								room[i].tile[0][o].direction.south = true
-								room[k].tile[room[k].length-1][p].direction.north = true
-							end
+		elseif(randomDirection == 2) then -- spawn on direction [-1,0]
+			spawnX = room[k].spawnX - newLength -1
+			minZ = room[k].spawnZ - newDepth + 1
+			maxZ = room[k].spawnZ + room[k].depth -2
+			spawnZ = rand:GetInteger(minZ,maxZ) 
+			roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
+			
+			if(roomPositionValidation == true) then
+				for o=0,newDepth-1 do
+					for p=0,room[k].depth-1 do
+						if(spawnZ+o == room[k].spawnZ+p) then
+							--print("room[i].spawnZ:"..room[i].spawnZ.." o:"..o.. " room[k].spawnZ:"..room[k].spawnZ.." p:"..p)
+							room[i].parentRoomNumber = k
+							room[i].tile[newLength-1][o].isConnector = true
+							room[k].tile[0][p].isConnector = true
+							room[i].parentDirection = "north"
+							room[i].tile[newLength-1][o].parentDirection = "north"
+							room[i].tile[newLength-1][o].direction.north = true
+							room[k].tile[0][p].direction.south = true
 						end
 					end
 				end
-
-			elseif(randomDirection == 2) then -- spawn on direction [-1,0]
-				spawnX = room[k].spawnX - newLength -1
-				minZ = room[k].spawnZ - newDepth + 1
-				maxZ = room[k].spawnZ + room[k].depth -2
-				spawnZ = rand:GetInteger(minZ,maxZ) 
-				roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
-				
-				if(roomPositionValidation == true) then
-					for o=0,newDepth-1 do
-						for p=0,room[k].depth-1 do
-							if(spawnZ+o == room[k].spawnZ+p) then
-								--print("room[i].spawnZ:"..room[i].spawnZ.." o:"..o.. " room[k].spawnZ:"..room[k].spawnZ.." p:"..p)
-								room[i].parentRoomNumber = k
-								room[i].tile[newLength-1][o].isConnector = true
-								room[k].tile[0][p].isConnector = true
-								room[i].parentDirection = "north"
-								room[i].tile[newLength-1][o].parentDirection = "north"
-								room[i].tile[newLength-1][o].direction.north = true
-								room[k].tile[0][p].direction.south = true
-							end
+			end
+			
+		elseif(randomDirection == 3) then -- spawn on direction [0,1]
+			minX = room[k].spawnX - (newLength) +1
+			maxX = room[k].spawnX + room[k].length -2
+			spawnX = rand:GetInteger(minX, maxX)
+			spawnZ = room[k].spawnZ + room[k].depth +1
+			roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
+			
+			if(roomPositionValidation == true) then
+				for o=0,newLength-1 do
+					for p=0,room[k].length-1 do
+						if(spawnX+o == room[k].spawnX+p) then
+							--print("room[i].spawnZ:"..room[i].spawnZ.." o:"..o.. " room[k].spawnZ:"..room[k].spawnZ.." p:"..p)
+							room[i].parentRoomNumber = k
+							room[i].tile[o][0].isConnector = true
+							room[k].tile[p][room[k].depth-1].isConnector = true
+							room[i].parentDirection = "west"
+							room[i].tile[o][0].parentDirection = "west"
+							room[i].tile[o][0].direction.west = true
+							room[k].tile[p][room[k].depth-1].direction.east = true
 						end
 					end
 				end
-				
-			elseif(randomDirection == 3) then -- spawn on direction [0,1]
-				minX = room[k].spawnX - (newLength) +1
-				maxX = room[k].spawnX + room[k].length -2
-				spawnX = rand:GetInteger(minX, maxX)
-				spawnZ = room[k].spawnZ + room[k].depth +1
-				roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
-				
-				if(roomPositionValidation == true) then
-					for o=0,newLength-1 do
-						for p=0,room[k].length-1 do
-							if(spawnX+o == room[k].spawnX+p) then
-								--print("room[i].spawnZ:"..room[i].spawnZ.." o:"..o.. " room[k].spawnZ:"..room[k].spawnZ.." p:"..p)
-								room[i].parentRoomNumber = k
-								room[i].tile[o][0].isConnector = true
-								room[k].tile[p][room[k].depth-1].isConnector = true
-								room[i].parentDirection = "west"
-								room[i].tile[o][0].parentDirection = "west"
-								room[i].tile[o][0].direction.west = true
-								room[k].tile[p][room[k].depth-1].direction.east = true
-							end
+			end
+			
+		else -- spawn on direction [0,-1]
+			minX = room[k].spawnX - (newLength) + 1
+			maxX = room[k].spawnX + room[k].length -2
+			spawnX = rand:GetInteger(minX, maxX)
+			spawnZ = room[k].spawnZ - newDepth -1
+			roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
+			
+			if(roomPositionValidation == true) then
+				for o=0,newLength-1 do
+					for p=0,room[k].length-1 do
+						if(spawnX+o == room[k].spawnX+p) then
+							--print("room[i].spawnZ:"..room[i].spawnZ.." o:"..o.. " room[k].spawnZ:"..room[k].spawnZ.." p:"..p)
+							room[i].parentRoomNumber = k
+							room[i].tile[o][newDepth-1].isConnector = true
+							room[k].tile[p][0].isConnector = true
+							room[i].parentDirection = "east"
+							room[i].tile[o][newDepth-1].parentDirection = "east"
+							room[i].tile[o][newDepth-1].direction.east = true
+							room[k].tile[p][0].direction.west = true
 						end
 					end
 				end
-				
-			else -- spawn on direction [0,-1]
-				minX = room[k].spawnX - (newLength) + 1
-				maxX = room[k].spawnX + room[k].length -2
-				spawnX = rand:GetInteger(minX, maxX)
-				spawnZ = room[k].spawnZ - newDepth -1
-				roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
-				
-				if(roomPositionValidation == true) then
-					for o=0,newLength-1 do
-						for p=0,room[k].length-1 do
-							if(spawnX+o == room[k].spawnX+p) then
-								--print("room[i].spawnZ:"..room[i].spawnZ.." o:"..o.. " room[k].spawnZ:"..room[k].spawnZ.." p:"..p)
-								room[i].parentRoomNumber = k
-								room[i].tile[o][newDepth-1].isConnector = true
-								room[k].tile[p][0].isConnector = true
-								room[i].parentDirection = "east"
-								room[i].tile[o][newDepth-1].parentDirection = "east"
-								room[i].tile[o][newDepth-1].direction.east = true
-								room[k].tile[p][0].direction.west = true
-							end
-						end
-					end
-				end
-			end --ends switch of 4 options
-						
-		until (roomPositionValidation == true) -- will check if the room does not overlap another room and loop until it finds a valid XZ place to spawn
-		-- save the values for the current room i on our rooms array				
-		room[i].length = newLength
-		room[i].depth = newDepth
-		room[i].spawnX = spawnX
-		room[i].spawnZ = spawnZ
-		AddLinkedRoom(i,k)
-		print("created Room [" .. i .. "] on [" .. room[i].spawnX .. "," .. room[i].spawnZ .. "] dimensions X: " .. room[i].length.. " Y:" .. room[i].depth)
-		print()
-		
+			end
+		end --ends switch of 4 options
+	until (roomPositionValidation == true) -- will check if the room does not overlap another room and loop until it finds a valid XZ place to spawn
+	-- save the values for the current room i on our rooms array				
+	room[i].length = newLength
+	room[i].depth = newDepth
+	room[i].spawnX = spawnX
+	room[i].spawnZ = spawnZ
+	AddLinkedRoom(i,k)
+	print("created Room [" .. i .. "] on [" .. room[i].spawnX .. "," .. room[i].spawnZ .. "] dimensions X: " .. room[i].length.. " Y:" .. room[i].depth)
+	print()
 end
 
 
@@ -284,7 +283,12 @@ function SpawnLevel()
 	--[[for i=1,roomCount do
 		SpawnRoom(i)
 	end]]
+	World.FindObjectByName("initialPlatform"):Destroy()
 	SpawnRoom(1)
+	SpawnConnector(1)
+	
+	
+	
 end
 
 function SpawnRoom(i)
@@ -293,12 +297,15 @@ function SpawnRoom(i)
 	local newPosition, newScale, newRotation
 	local startX = 0
 	local startZ = 0
-	local asset, assetFolder
+	local asset, floorFolder
 	
-	assetFolder =  World.SpawnAsset(propNewFolder)
-	assetFolder.name = "Floor "..i
-	assetFolder.parent = World.FindObjectByName("FloorAssets")
-	
+	floorFolder = World.FindObjectByName("Floor "..i)
+	if(floorFolder == nil) then
+		floorFolder = World.SpawnAsset(propNewFolder)
+		floorFolder.name = "Floor "..i
+		floorFolder.parent = World.FindObjectByName("FloorAssets")
+	end
+		
 	--spawn the room floor with size x,y
 	newPosition = Vector3.New(room[i].spawnX*200+(room[i].length*100), (room[i].spawnZ*200)+(room[i].depth*100), -25)
 	newScale = Vector3.New(room[i].length*2, room[i].depth*2, 0.5)
@@ -310,9 +317,8 @@ function SpawnRoom(i)
 	newPosition = Vector3.New(room[i].spawnX*200+(room[i].length*100), (room[i].spawnZ*200)+(room[i].depth*100), 300)
 	newScale = Vector3.New(room[i].length*2-1, room[i].depth*2-1, 6)
 	asset = World.SpawnAsset(propTrigger, {position = newPosition, scale = newScale})
-	print(asset.room)
 	asset.name = "Trigger "..i
-	asset.parent = assetFolder
+	asset.parent = floorFolder
 	
 	--[[spawn room ceiling x,y
 	newPosition = Vector3.New(room[i].spawnX*200+(room[i].length*100), (room[i].spawnZ*200)+(room[i].depth*100), 625)
@@ -329,14 +335,13 @@ function SpawnRoom(i)
 	local offset = 0
 	
 	-- spawn the walls in the [-1,0] south side of the room
-	-- each new room has 1 parent only. will check the direction of parent room and spawn only 1 connector to parent room
 	for m=0,room[i].depth-1 do
 		if(room[i].tile[0][m].isConnector == true and room[i].tile[0][m].direction.south == true and room[i].tile[0][m].parentDirection == "south") then 
-			if(first==1) then
+			--[[if(first==1) then
 				first=0
 				startConnector = m
 			end
-			counter=counter+1
+			counter=counter+1]]
 		elseif(room[i].tile[0][m].isConnector == true and room[i].tile[0][m].direction.south == true) then
 			--do nothing (do not spawn a wall)
 		else
@@ -362,11 +367,11 @@ function SpawnRoom(i)
 	-- spawn the walls in the [1,0] north side of the room
 	for m=0,room[i].depth-1 do
 		if(room[i].tile[room[i].length-1][m].isConnector == true and room[i].tile[room[i].length-1][m].direction.north == true and room[i].tile[room[i].length-1][m].parentDirection == "north") then
-			if(first==1) then
+			--[[if(first==1) then
 				first=0
 				startConnector = m
 			end
-			counter=counter+1
+			counter=counter+1]]
 		elseif(room[i].tile[room[i].length-1][m].isConnector == true and room[i].tile[room[i].length-1][m].direction.north == true) then
 			--do nothing (do not spawn a wall)
 		else
@@ -392,11 +397,11 @@ function SpawnRoom(i)
 	-- spawn the walls in the [0,1] east side of the room
 	for m=0,room[i].length-1 do
 		if(room[i].tile[m][0].isConnector == true and room[i].tile[m][0].direction.west == true and room[i].tile[m][0].parentDirection == "west") then 
-			if(first==1) then
+			--[[if(first==1) then
 				first=0
 				startConnector = m
 			end
-			counter=counter+1
+			counter=counter+1]]
 		elseif(room[i].tile[m][0].isConnector == true and room[i].tile[m][0].direction.west == true) then
 			--do nothing (do not spawn a wall)
 		else
@@ -422,11 +427,11 @@ function SpawnRoom(i)
 	-- spawn the walls in the [0,-1] west side of the room
 	for m=0,room[i].length-1 do
 		if(room[i].tile[m][room[i].depth-1].isConnector == true and room[i].tile[m][room[i].depth-1].direction.east == true and room[i].tile[m][room[i].depth-1].parentDirection == "east") then
-			if(first==1) then
+			--[[if(first==1) then
 				first=0
 				startConnector = m
 			end
-			counter=counter+1
+			counter=counter+1]]
 		elseif(room[i].tile[m][room[i].depth-1].isConnector == true and room[i].tile[m][room[i].depth-1].direction.east == true) then
 			--do nothing (do not spawn a wall)
 		else
@@ -446,27 +451,77 @@ function SpawnRoom(i)
 			asset.parent = World.FindObjectByName("Floor "..i)
 		end
 	end
-
-	if(first==0) then
-		SpawnConnector(i, counter, startConnector,room)
-
-	end
 end	
 
 
 
 
 
-function SpawnConnector(i, counter, startConnector, room)
+function SpawnConnector(i)
 --depending on the size of the connection, will spawn different doors/connectors	
-	local m = 0
+	
+	room[i].activeConnector = true
+	
+	local m, asset,assetFolder,connectorFolder
 	local offsetX = 0
 	local offsetY = 0
-	local asset,assetFolder
+
+	connectorFolder = World.FindObjectByName("Connectors")
+	if(connectorFolder == nil) then
+		connectorFolder = World.SpawnAsset(propNewFolder)
+		connectorFolder.name = "Connectors"
+		connectorFolder.parent = World.FindObjectByName("FloorAssets")
+	end
 	
-	assetFolder =  World.SpawnAsset(propNewFolder)
-	assetFolder.name = "Floor "..i.." Connectors"
-	assetFolder.parent = World.FindObjectByName("Floor "..i)
+	assetFolder = World.FindObjectByName("Floor "..i.." ParentConnector")
+	if(assetFolder == nil) then
+		assetFolder =  World.SpawnAsset(propNewFolder)
+		assetFolder.name = "Floor "..i.." ParentConnector"
+		assetFolder.parent = connectorFolder
+	end
+
+	local counter = 0
+	local first = 1 -- will count the first tile that connects
+	local startConnector =0
+	
+	-- each new room has 1 parent only. will check the direction of parent room and spawn only 1 connector to parent room
+	-- check north and south sides of the room for parent connector
+	for m=0,room[i].depth-1 do
+		if(room[i].tile[0][m].isConnector == true and room[i].tile[0][m].direction.south == true and room[i].tile[0][m].parentDirection == "south") then 
+			if(first==1) then
+				first=0
+				startConnector = m
+			end
+		counter=counter+1
+		end
+		
+		if(room[i].tile[room[i].length-1][m].isConnector == true and room[i].tile[room[i].length-1][m].direction.north == true and room[i].tile[room[i].length-1][m].parentDirection == "north") then
+			if(first==1) then
+				first=0
+				startConnector = m
+			end
+			counter=counter+1
+		end
+	end
+	
+	-- check east and west sides of the room for parent connector
+	for m=0,room[i].length-1 do
+		if(room[i].tile[m][0].isConnector == true and room[i].tile[m][0].direction.west == true and room[i].tile[m][0].parentDirection == "west") then 
+			if(first==1) then
+				first=0
+				startConnector = m
+			end
+			counter=counter+1
+		end
+		
+		if(room[i].tile[m][room[i].depth-1].isConnector == true and room[i].tile[m][room[i].depth-1].direction.east == true and room[i].tile[m][room[i].depth-1].parentDirection == "east") then
+			if(first==1) then
+				first=0
+				startConnector = m
+			end
+			counter=counter+1
+		end
+	end
 	
 	if(room[i].parentDirection == "south") then
 		offsetX = -100
@@ -482,6 +537,7 @@ function SpawnConnector(i, counter, startConnector, room)
 		offsetY = -100+(room[i].depth+1)*200
 	end
 	
+	m=0
 	--spawn connectors along the horizontal axis 
 	if(room[i].parentDirection == "south" or room[i].parentDirection == "north") then 
 
@@ -513,7 +569,7 @@ function SpawnConnector(i, counter, startConnector, room)
 				newPosition = Vector3.New((room[i].spawnX)*200+offsetX, ((room[i].spawnZ+startConnector+(counter/2))*200+200+offsetY), 0)
 				newScale = Vector3.New(2,1,1)
 				newRotation = Rotation.New(0,0,0)
-				World.SpawnAsset(propWall01, {position = newPosition, scale = newScale, rotation = newRotation})
+				asset = World.SpawnAsset(propWall01, {position = newPosition, scale = newScale, rotation = newRotation})
 				asset.name = "ConnectorWall "..i
 				asset.parent = assetFolder
 			end
@@ -677,7 +733,7 @@ function SpawnConnector(i, counter, startConnector, room)
 	end
 end
 
-function test()
+function PrintLinkedRooms()
 	for i=1,roomCount do
 		local m =0
 		while (room[i].linkedRoom[m]~=0) do
@@ -692,9 +748,7 @@ function PlayerCurrentRoom (other)
 	local i = 1
 	local player = other
 	local playerPosition = player:GetWorldPosition()
-	print(playerPosition)
-	print(roomCount)
-	
+
 	while i<=roomCount do
 		if(playerPosition.x > room[i].spawnX*xyOffset and playerPosition.x < (room[i].spawnX+room[i].length)*xyOffset) then
 			if(playerPosition.y > room[i].spawnZ*xyOffset and playerPosition.y < (room[i].spawnZ+room[i].depth)*xyOffset) then
@@ -710,27 +764,53 @@ end
 
 function UpdateActiveRooms (other)
 	local i
-	local m = 0
-	local floorToDestroy
+	local m, n, l, s
+	local floorToDestroy, connectorToDestroy
 	
 	for i=1,roomCount do
 		if(room[i].active == true) then
 			room[i].active = false
 		end
+		if(room[i].activeConnector == true) then
+			room[i].activeConnector = false
+		end
 	end
 	i = PlayerCurrentRoom(other)
 	room[i].active = true
 	
+	m=0
 	while (room[i].linkedRoom[m]~=0) do
-		if(room[room[i].linkedRoom[m]].active == false) then
-			room[room[i].linkedRoom[m]].active = true
+		l = room[i].linkedRoom[m]
+		if(room[l].active == false) then
+			room[l].active = true
 		else
-			SpawnRoom(room[i].linkedRoom[m])
+			SpawnRoom(l)
 		end
 		m=m+1
 	end
 	
-
+	m=0
+	while (room[i].linkedRoom[m]~=0) do
+		l = room[i].linkedRoom[m]
+		if(room[l].activeConnector == false) then
+			room[l].activeConnector = true
+		else
+			if(not World.FindObjectByName("Floor "..l.." ParentConnector")) then SpawnConnector(l) end
+		end
+		
+		n=0
+		while (room[l].linkedRoom[n]~=0) do
+			s = room[l].linkedRoom[n]
+			if(room[s].activeConnector == false) then
+				room[s].activeConnector = true
+			else
+				if(not World.FindObjectByName("Floor "..s.." ParentConnector")) then SpawnConnector(s) end
+			end
+			n=n+1
+		end
+		m=m+1
+	end
+	
 	--destroy inactive rooms
 	for i=1,roomCount do
 		if(room[i].active == false) then
@@ -739,19 +819,40 @@ function UpdateActiveRooms (other)
 			floorToDestroy:Destroy()
 		end
 	end
+	
+	--destroy inactive connectors
+	for i=1,roomCount do
+		if(room[i].activeConnector == false) then
+			room[i].activeConnector = nil
+			connectorToDestroy = World.FindObjectByName("Floor "..i.." ParentConnector")
+			connectorToDestroy:Destroy()
+		end
+	end
+end
+
+
+function test()
+	for i=1,1 do
+		print("enter")
+	end
+end
+
+function SpawnInitialPlatform()
+	newPosition = Vector3.New(200,200,700)
+	newScale = Vector3.New(4,4,.5)
+	newRotation = Rotation.New(0,0,0)
+	asset = World.SpawnAsset(propFloor01, {position = newPosition, scale = newScale, rotation = newRotation})
+	asset.name = "initialPlatform"
+	asset.parent = World.FindObjectByName("FloorAssets")
 end
 
 
 
-
+SpawnInitialPlatform()
 GenerateLevel()
-SpawnLevel()
-test()
+PrintLinkedRooms()
 Events.Connect("UpdateActiveRooms", UpdateActiveRooms)
-
-
-
-
+test()
 
 
 

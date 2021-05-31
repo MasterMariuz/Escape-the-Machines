@@ -21,7 +21,6 @@ Objects {
   ChildIds: 8641810105033289747
   ChildIds: 17243819759055117523
   ChildIds: 18009036565845862959
-  ChildIds: 11911223213412007206
   ChildIds: 7619716877809907977
   ChildIds: 8875509650323435026
   UnregisteredParameters {
@@ -98,69 +97,6 @@ Objects {
     }
     TemplateAsset {
       Id: 12802208505368749406
-    }
-  }
-}
-Objects {
-  Id: 11911223213412007206
-  Name: "Sci-fi Base Wall Interior 01 Half - Sliding Door Template"
-  Transform {
-    Scale {
-      X: 1
-      Y: 1
-      Z: 1
-    }
-  }
-  ParentId: 4781671109827199097
-  Collidable_v2 {
-    Value: "mc:ecollisionsetting:inheritfromparent"
-  }
-  Visible_v2 {
-    Value: "mc:evisibilitysetting:inheritfromparent"
-  }
-  TemplateInstance {
-    ParameterOverrideMap {
-      key: 3756220296846602031
-      value {
-        Overrides {
-          Name: "Name"
-          String: "Sci-fi Base Wall Interior 01 Half - Sliding Door Template"
-        }
-        Overrides {
-          Name: "Position"
-          Vector {
-            X: -50
-            Y: 700
-            Z: -50
-          }
-        }
-      }
-    }
-    ParameterOverrideMap {
-      key: 7883420798467359091
-      value {
-        Overrides {
-          Name: "Position"
-          Vector {
-            X: -699.997864
-            Y: -6.10351563e-05
-          }
-        }
-      }
-    }
-    ParameterOverrideMap {
-      key: 10604619641222160896
-      value {
-        Overrides {
-          Name: "Position"
-          Vector {
-            Y: -9.99999905
-          }
-        }
-      }
-    }
-    TemplateAsset {
-      Id: 720021612519160006
     }
   }
 }
@@ -1013,7 +949,7 @@ Objects {
     Location {
       X: 200
       Y: 200
-      Z: 350
+      Z: 1200
     }
     Rotation {
     }

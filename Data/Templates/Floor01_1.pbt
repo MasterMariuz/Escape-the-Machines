@@ -10,12 +10,12 @@ Assets {
         Name: "Floor01"
         Transform {
           Scale {
-            X: 4
-            Y: 4
-            Z: 0.5
+            X: 5000
+            Y: 5000
+            Z: 0.01
           }
         }
-        ParentId: 8641810105033289747
+        ParentId: 4781671109827199097
         UnregisteredParameters {
           Overrides {
             Name: "ma:Shared_BaseMaterial:id"
@@ -57,6 +57,7 @@ Assets {
             IsTeamCollisionEnabled: true
             IsEnemyCollisionEnabled: true
           }
+          DisableCastShadows: true
           StaticMesh {
             Physics {
               Mass: 100

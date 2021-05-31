@@ -47,7 +47,7 @@ if SPEED <= 0.0 then
 end
 
 -- Constants
-local USE_DEBOUNCE_TIME = 0.2			-- Time after using that a player can't use again
+local USE_DEBOUNCE_TIME = 0.0			-- Time after using that a player can't use again
 
 -- Variables
 -- Offset is 1.0 for fully opened, 0.0 for closed
@@ -104,11 +104,11 @@ end
 -- Handles the player overlapping if AutoOpen is true
 function OnBeginOverlap(trigger, other)
 	if other:IsA("Player") then
-		if GetDoorOffset() == 0.0 then								-- Can't auto open if the door isn't closed
+		--if GetDoorOffset() == 0.0 then								-- Can't auto open if the door isn't closed
 			OpenDoor(other)
 
 			autoCloseTime = time() + TIME_OPEN
-		end
+		--end
 	end
 end
 

@@ -7,7 +7,7 @@ Assets {
       RootId: 17997279093896308508
       Objects {
         Id: 17997279093896308508
-        Name: "Sci-fi Base Wall Interior 01 Half - Sliding Door Template"
+        Name: "Door2x1"
         Transform {
           Scale {
             X: 1
@@ -132,7 +132,7 @@ Assets {
           }
           Overrides {
             Name: "cs:TimeOpen"
-            Float: 3
+            Float: 0
           }
           Overrides {
             Name: "cs:OpenLabel"
@@ -148,7 +148,7 @@ Assets {
           }
           Overrides {
             Name: "cs:Speed"
-            Float: 450
+            Float: 900
           }
           Overrides {
             Name: "cs:ResetOnRoundStart"
@@ -202,15 +202,15 @@ Assets {
         Name: "Trigger"
         Transform {
           Location {
-            Y: 90
-            Z: 150
+            Y: 89.9999924
+            Z: 300
           }
           Rotation {
           }
           Scale {
-            X: 1.5
-            Y: 1.8
-            Z: 3
+            X: 6
+            Y: 6
+            Z: 6
           }
         }
         ParentId: 1464091228851904056

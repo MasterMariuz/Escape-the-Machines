@@ -5,10 +5,13 @@ rand = RandomStream.New(timeSeed)
 room = {}
 xyOffset = 200
 roomCount = 0
+intersectCount = 0
 
 --variables to tweak the floor creation
-extraRooms = 15
-mainRooms = 35
+
+mainRooms = 100
+local rateExtraRooms = 100 -- % of mainRooms
+extraRooms = math.floor(mainRooms*rateExtraRooms/100)
 minRoomLength = 1	
 maxRoomLength = 12
 minFinalRoomLength = 9 
@@ -52,8 +55,8 @@ end
 
 function GenerateLevel() -- Executes the calculations for the values of the new floor
 
-	-- declare initial randomized values that will build the entire floor
-	local timer = 0;
+	local timer = 0
+	local m
 	--spawn initial Room
 	initializeRoom(1)
 	room[1].length = rand:GetInteger(4,12)
@@ -62,21 +65,31 @@ function GenerateLevel() -- Executes the calculations for the values of the new 
 	room[1].spawnZ = 0
 	initiateTiles (1,room[1].length,room[1].depth)
 	roomCount = 1
+	
+	CreateRoom("mainRoute")
 
 	--create main route until all room blocks have been used up
-	for m=0, mainRooms do
+	for m=1, mainRooms do
 		CreateRoom("mainRoute")
+		SpawnRoom(roomCount)
 	end
 	
+	print(i)
 	--create final room
 	CreateRoom("finalRoom")
+	SpawnRoom(roomCount-2)
 	
 	--main route has been created. Now, we'll create alternate routes
-	for m=0, extraRooms do
+	for m=1, extraRooms do
 		CreateRoom("extraRoom")
+		SpawnRoom(roomCount)
 	end
-	SpawnLevel()
 	
+	SpawnRoom(1)
+	SpawnConnector(1)
+	SpawnRoom(2)
+	World.FindObjectByName("initialPlatform"):Destroy()
+	--SpawnLevel()	
 	
 end --ends the function
 
@@ -86,7 +99,6 @@ end --ends the function
 
 function CreateRoom(type)
 	
-	Task.Wait()
 	roomCount = roomCount + 1
 	local i = roomCount
 	initializeRoom(i)
@@ -99,9 +111,18 @@ function CreateRoom(type)
 	local counter = 0
 	local kRoomXmin, kRoomXmax, newRoomXmin, newRoomXmax, kRoomZmin, kRoomZmax, newRoomZmin, newRoomZmax 
 	local minX, maxX, minZ, maxZ, newLength, newDepth, randomDirection, o, p, k
+	local countWait=0
 	local roomPositionValidation = false --if true, location has been confirmed to be valid and does not intersect with existing rooms	
 	
+	countWait=0
 	repeat 
+		--wait 1 frame every 3 loops instead of 1 to generate level 3x faster
+		countWait = countWait+1
+		refDirection = {}
+		if(countWait==5) then
+			Task.Wait()
+			countWait=0
+		end
 		repeat
 			if(type=="finalRoom") then
 				newLength = rand:GetInteger(minFinalRoomLength,maxFinalRoomLength)
@@ -112,14 +133,15 @@ function CreateRoom(type)
 			end
 		until(newLength * newDepth >= 6)
 		initiateTiles (i,newLength,newDepth)
-			-- randomDirection: 1 = north, 2 = south, 3 = east, 4 = west
-			randomDirection = rand:GetInteger(1,4) -- will find a direction to spawn a new room relative to the first room i
-			counter = counter + 1
+		
+		-- randomDirection: 1 = north, 2 = south, 3 = east, 4 = west
+		randomDirection = rand:GetInteger(1,4) -- will find a direction to spawn a new room relative to the first room i
+		counter = counter + 1
 			
 		if(type=="mainRoute" or type=="finalRoom") then
-			k = i - 1 - math.floor(counter / 4) -- will check x loops before moving to a previous room (default:20)
+			k = i - 1 - math.floor(counter / 8) -- will check x loops before moving to a previous room (default:20)
 		elseif(type=="extraRoom") then
-			k = rand:GetInteger(2,roomCount-1)
+			k = rand:GetInteger(2,roomCount)
 		end
 
 		if(randomDirection == 1) then -- spawn on direction [1,0]
@@ -246,10 +268,17 @@ end
 
 -- checks if the room i intersects with every room previously created
 function CheckRoomIntersect (i,spawnX,spawnZ,newLength,newDepth) 
-	Task.Wait()
 	local xMin, xMax, zMin, zMax, a, x, z
 	a = 1
+	local counter =0
 	repeat
+		--delay every x loops to prevent instruction limit exceeded error
+		counter = counter+1
+		if (counter==100) then
+			Task.Wait()
+			counter =0
+		end
+		
 		xMin = room[a].spawnX -1
 		xMax = room[a].spawnX + room[a].length-1 +1
 		zMin = room[a].spawnZ -1
@@ -261,9 +290,12 @@ function CheckRoomIntersect (i,spawnX,spawnZ,newLength,newDepth)
 				z = 0
 				repeat
 					if(spawnZ + z >= zMin and spawnZ + z <= zMax) then
+						intersectCount = intersectCount+1
+						local rate = math.floor((i/intersectCount)*100)
 						print()
-						print("a:"..a.." x:"..x.." z:"..z.." i:"..i.." room[i]spawnZ:"..spawnZ.." zMin:"..zMin.." zMax:"..zMax.." newLength:"..newLength.." newDepth:"..newDepth)
-						print("INTERSECTS WITH EXISTING ROOM")
+						print("a:"..a.." x:"..x.." z:"..z.." i:"..i.." XY:["..spawnX..","..spawnZ.."] xMinMax:"..xMin..","..xMax.." zMinMax:"..zMin..","..zMax.." newLength:"..newLength.." newDepth:"..newDepth)
+						print("ERROR COUNT: "..intersectCount.." ... INTERSECTS WITH EXISTING ROOM")
+						print("Rate of Success: "..rate.."%")
 						return false
 					end
 					z = z + 1
@@ -349,9 +381,9 @@ function SpawnRoom(i)
 			startX = -50
 			startZ = 100
 			if(room[i].tile[0][m].type == "corner") then
-				if(m==0) then offset = -50 else offset = 50 end
+				if(m==0) then offset = -75 else offset = 75 end
 				newPosition = Vector3.New((room[i].spawnX)*200+startX,(room[i].spawnZ+m)*200+startZ+offset,0)
-				newScale = Vector3.New(1,1.4,1)
+				newScale = Vector3.New(1,1.6,1)
 			else
 				newPosition = Vector3.New((room[i].spawnX)*200+startX,(room[i].spawnZ+m)*200+startZ,0)
 				newScale = Vector3.New(1,1,1)
@@ -379,9 +411,9 @@ function SpawnRoom(i)
 			startX = 250
 			startZ = 100
 			if(room[i].tile[room[i].length-1][m].type == "corner") then
-				if(m==0) then offset = -50 else offset = 50 end
+				if(m==0) then offset = -75 else offset = 75 end
 				newPosition = Vector3.New((room[i].spawnX+room[i].length-1)*200+startX,(room[i].spawnZ+m)*200+startZ+offset,0)
-				newScale = Vector3.New(1,1.4,1)
+				newScale = Vector3.New(1,1.6,1)
 			else
 				newPosition = Vector3.New((room[i].spawnX+room[i].length-1)*200+startX,(room[i].spawnZ+m)*200+startZ,0)
 				newScale = Vector3.New(1,1,1)
@@ -409,9 +441,9 @@ function SpawnRoom(i)
 			startX = 100
 			startZ = -50
 			if(room[i].tile[m][0].type == "corner") then
-				if(m==0) then offset = -50 else offset = 50 end
+				if(m==0) then offset = -75 else offset = 75 end
 				newPosition = Vector3.New((room[i].spawnX+m)*200+startX+offset,(room[i].spawnZ)*200+startZ,0)
-				newScale = Vector3.New(1,1.4,1)
+				newScale = Vector3.New(1,1.6,1)
 			else
 				newPosition = Vector3.New((room[i].spawnX+m)*200+startX,(room[i].spawnZ)*200+startZ,0)
 				newScale = Vector3.New(1,1,1)
@@ -439,9 +471,9 @@ function SpawnRoom(i)
 			startX = 100
 			startZ = 250
 			if(room[i].tile[m][room[i].depth-1].type == "corner") then
-				if(m==0) then offset = -50 else offset = 50 end
+				if(m==0) then offset = -75 else offset = 75 end
 				newPosition = Vector3.New((room[i].spawnX+m)*200+startX+offset,(room[i].spawnZ+room[i].depth-1)*200+startZ,0)
-				newScale = Vector3.New(1,1.4,1)
+				newScale = Vector3.New(1,1.6,1)
 			else
 				newPosition = Vector3.New((room[i].spawnX+m)*200+startX,(room[i].spawnZ+room[i].depth-1)*200+startZ,0)
 				newScale = Vector3.New(1,1,1)
@@ -763,71 +795,73 @@ end
 
 
 function UpdateActiveRooms (other)
-	local i
-	local m, n, l, s
-	local floorToDestroy, connectorToDestroy
-	
-	for i=1,roomCount do
-		if(room[i].active == true) then
-			room[i].active = false
+	local newTask = Task.Spawn(function()
+		local i
+		local m, n, l, s
+		local floorToDestroy, connectorToDestroy
+		
+		for i=1,roomCount do
+			if(room[i].active == true) then
+				room[i].active = false
+			end
+			if(room[i].activeConnector == true) then
+				room[i].activeConnector = false
+			end
 		end
-		if(room[i].activeConnector == true) then
-			room[i].activeConnector = false
-		end
-	end
-	i = PlayerCurrentRoom(other)
-	room[i].active = true
-	
-	m=0
-	while (room[i].linkedRoom[m]~=0) do
-		l = room[i].linkedRoom[m]
-		if(room[l].active == false) then
-			room[l].active = true
-		else
-			SpawnRoom(l)
-		end
-		m=m+1
-	end
-	
-	m=0
-	while (room[i].linkedRoom[m]~=0) do
-		l = room[i].linkedRoom[m]
-		if(room[l].activeConnector == false) then
-			room[l].activeConnector = true
-		else
-			if(not World.FindObjectByName("Floor "..l.." ParentConnector")) then SpawnConnector(l) end
+		i = PlayerCurrentRoom(other)
+		room[i].active = true
+		
+		m=0
+		while (room[i].linkedRoom[m]~=0) do
+			l = room[i].linkedRoom[m]
+			if(room[l].active == false) then
+				room[l].active = true
+			else
+				SpawnRoom(l,World.FindObjectByName("FloorAssets"))
+			end
+			m=m+1
 		end
 		
-		n=0
-		while (room[l].linkedRoom[n]~=0) do
-			s = room[l].linkedRoom[n]
-			if(room[s].activeConnector == false) then
-				room[s].activeConnector = true
+		m=0
+		while (room[i].linkedRoom[m]~=0) do
+			l = room[i].linkedRoom[m]
+			if(room[l].activeConnector == false) then
+				room[l].activeConnector = true
 			else
-				if(not World.FindObjectByName("Floor "..s.." ParentConnector")) then SpawnConnector(s) end
+				if(not World.FindObjectByName("Floor "..l.." ParentConnector")) then SpawnConnector(l) end
 			end
-			n=n+1
+			
+			n=0
+			while (room[l].linkedRoom[n]~=0) do
+				s = room[l].linkedRoom[n]
+				if(room[s].activeConnector == false) then
+					room[s].activeConnector = true
+				else
+					if(not World.FindObjectByName("Floor "..s.." ParentConnector")) then SpawnConnector(s) end
+				end
+				n=n+1
+			end
+			m=m+1
 		end
-		m=m+1
-	end
-	
-	--destroy inactive rooms
-	for i=1,roomCount do
-		if(room[i].active == false) then
-			room[i].active = nil
-			floorToDestroy = World.FindObjectByName("Floor "..i)
-			floorToDestroy:Destroy()
+		
+		--destroy inactive rooms
+		for i=1,roomCount do
+			if(room[i].active == false) then
+				room[i].active = nil
+				floorToDestroy = World.FindObjectByName("Floor "..i)
+				floorToDestroy:Destroy()
+			end
 		end
-	end
-	
-	--destroy inactive connectors
-	for i=1,roomCount do
-		if(room[i].activeConnector == false) then
-			room[i].activeConnector = nil
-			connectorToDestroy = World.FindObjectByName("Floor "..i.." ParentConnector")
-			connectorToDestroy:Destroy()
+		
+		--destroy inactive connectors
+		for i=1,roomCount do
+			if(room[i].activeConnector == false) then
+				room[i].activeConnector = nil
+				connectorToDestroy = World.FindObjectByName("Floor "..i.." ParentConnector")
+				connectorToDestroy:Destroy()
+			end
 		end
-	end
+	end)
 end
 
 
@@ -848,8 +882,10 @@ end
 
 
 
+
 SpawnInitialPlatform()
 GenerateLevel()
+--SpawnServerLevel()
 PrintLinkedRooms()
 Events.Connect("UpdateActiveRooms", UpdateActiveRooms)
 test()

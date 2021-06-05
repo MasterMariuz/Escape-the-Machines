@@ -1073,5 +1073,5 @@ Assets {
       AssetId: "Sci-fi_Base_Wall_Interior_01_-_Double_Sliding_Door_Template"
     }
   }
-  SerializationVersion: 85
+  SerializationVersion: 87
 }

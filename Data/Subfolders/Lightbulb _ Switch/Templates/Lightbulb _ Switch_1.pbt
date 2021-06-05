@@ -1614,6 +1614,6 @@ Assets {
   Marketplace {
     Description: "Lightbulb and Switch template for the Lua Scripting Tutorial.\r\n\r\nCheck it out at: https://docs.coregames.com/tutorials/lua_basics_lightbulb/\r\n\r\nUpdate 1.01: Removes trigger. So you can add it yourself!"
   }
-  SerializationVersion: 85
+  SerializationVersion: 87
   DirectlyPublished: true
 }

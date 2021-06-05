@@ -6,11 +6,13 @@ room = {}
 xyOffset = 200
 roomCount = 0
 intersectCount = 0
+local player = World.FindObjectByName("player")
+
 
 --variables to tweak the floor creation
 
-mainRooms = 100
-local rateExtraRooms = 100 -- % of mainRooms
+mainRooms = 50
+local rateExtraRooms = 30 -- % of mainRooms
 extraRooms = math.floor(mainRooms*rateExtraRooms/100)
 minRoomLength = 1	
 maxRoomLength = 12
@@ -77,7 +79,7 @@ function GenerateLevel() -- Executes the calculations for the values of the new 
 	print(i)
 	--create final room
 	CreateRoom("finalRoom")
-	SpawnRoom(roomCount-2)
+	SpawnRoom(roomCount)
 	
 	--main route has been created. Now, we'll create alternate routes
 	for m=1, extraRooms do
@@ -88,7 +90,6 @@ function GenerateLevel() -- Executes the calculations for the values of the new 
 	SpawnRoom(1)
 	SpawnConnector(1)
 	SpawnRoom(2)
-	World.FindObjectByName("initialPlatform"):Destroy()
 	--SpawnLevel()	
 	
 end --ends the function
@@ -315,7 +316,6 @@ function SpawnLevel()
 	--[[for i=1,roomCount do
 		SpawnRoom(i)
 	end]]
-	World.FindObjectByName("initialPlatform"):Destroy()
 	SpawnRoom(1)
 	SpawnConnector(1)
 	
@@ -676,7 +676,7 @@ function SpawnConnector(i)
 			asset = World.SpawnAsset(propFloor01, {position = newPosition, scale = newScale})
 			asset.name = "ConnectorFloor"
 			asset.parent = assetFolder
-			
+						
 		elseif(counter>=2 and counter<=3) then
 			--floor
 			newPosition = Vector3.New((room[i].spawnX+startConnector+(counter/2))*200+offsetX, (room[i].spawnZ*200)+offsetY, -25)
@@ -880,15 +880,47 @@ function SpawnInitialPlatform()
 	asset.parent = World.FindObjectByName("FloorAssets")
 end
 
-
+--BROADCAST LISTENERS----------------------------------
+Events.Connect("UpdateActiveRooms", UpdateActiveRooms)
+-------------------------------------------------------
 
 
 SpawnInitialPlatform()
 GenerateLevel()
 --SpawnServerLevel()
+World.FindObjectByName("initialPlatform"):Destroy()
 PrintLinkedRooms()
-Events.Connect("UpdateActiveRooms", UpdateActiveRooms)
-test()
+--test()
+
+
+
+function cast()
+	Events.Broadcast("aaa")
+end
+
+cast()
+
+
+
+--BROADCASTERS----------------------------------------
+--Task.Wait() --send broadcast 1 frame after all Listeners have been established
+--Events.Broadcast("aaa")
+------------------------------------------------------
+
+LevelGenerated = script.LevelGenerated
+LevelGenerated = 1
+print("Masterscript")
+print(LevelGenerated)
+cc =0
+
+
+function Tick()
+	--cc = cc+1
+	--print(cc)
+end
+
+
+
 
 
 

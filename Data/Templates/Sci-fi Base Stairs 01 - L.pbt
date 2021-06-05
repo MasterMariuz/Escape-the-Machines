@@ -1130,5 +1130,5 @@ Assets {
       AssetId: "Sci-Fi_Base_Stairs_01_-_L"
     }
   }
-  SerializationVersion: 85
+  SerializationVersion: 87
 }

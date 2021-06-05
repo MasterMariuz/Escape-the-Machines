@@ -45,6 +45,17 @@ Objects {
     }
   }
   ParentId: 4781671109827199097
+  UnregisteredParameters {
+    Overrides {
+      Name: "cs:room"
+      Float: 0
+    }
+    Overrides {
+      Name: "cs:LevelGenerated"
+      Bool: false
+    }
+  }
+  WantsNetworking: true
   Collidable_v2 {
     Value: "mc:ecollisionsetting:forceon"
   }

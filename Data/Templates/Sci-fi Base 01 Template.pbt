@@ -32167,5 +32167,5 @@ Assets {
       AssetId: "Sci-fi_Base_01_Template"
     }
   }
-  SerializationVersion: 85
+  SerializationVersion: 87
 }

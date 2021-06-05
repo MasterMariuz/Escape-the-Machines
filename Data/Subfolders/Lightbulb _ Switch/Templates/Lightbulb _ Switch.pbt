@@ -43,5 +43,5 @@ Assets {
     Version: "1.1.0"
     Description: "Lightbulb and Switch template for the Lua Scripting Tutorial.\r\n\r\nCheck it out at: https://docs.coregames.com/tutorials/lua_basics_lightbulb/\r\n\r\nUpdate 1.2.0: Rewrote tutorial and edited template to match.\r\nUpdate 1.1.0: Removes trigger. So you can add it yourself!"
   }
-  SerializationVersion: 85
+  SerializationVersion: 87
 }

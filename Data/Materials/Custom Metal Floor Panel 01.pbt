@@ -2,7 +2,7 @@ Assets {
   Id: 12880474185601279951
   Name: "Custom Metal Floor Panel 01"
   PlatformAssetType: 13
-  SerializationVersion: 85
+  SerializationVersion: 87
   CustomMaterialAsset {
     BaseMaterialId: 16090068210164535692
     ParameterOverrides {

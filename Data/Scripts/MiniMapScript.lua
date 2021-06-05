@@ -3,15 +3,9 @@ local propMinimapPanel = script.parent:GetCustomProperty("MinimapPanel")
 local propMinimapBlock = script.parent:GetCustomProperty("MinimapBlock")
 local propMinimapBlocks = script.parent:GetCustomProperty("MinimapBlocks")
 
-print(script.parent)
-print(script.parent.parent)
 local a = nil
 local LevelGenerated, a = script.parent.parent:GetCustomProperty("room")
-print("found")
-print(a)
 MinimapGenerated = false
-print(LevelGenerated)
-print(MinimapGenerated)
 levelG = true 
 
 function SpawnMinimap()

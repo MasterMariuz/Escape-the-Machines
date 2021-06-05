@@ -47,15 +47,50 @@ Objects {
   ParentId: 4781671109827199097
   UnregisteredParameters {
     Overrides {
-      Name: "cs:room"
+      Name: "cs:mainRooms"
+      Int: 50
+    }
+    Overrides {
+      Name: "cs:rateExtraRooms"
+      Int: 30
+    }
+    Overrides {
+      Name: "cs:minRoomLength"
+      Int: 1
+    }
+    Overrides {
+      Name: "cs:maxRoomLength"
+      Int: 12
+    }
+    Overrides {
+      Name: "cs:minFinalRoomLength"
+      Int: 9
+    }
+    Overrides {
+      Name: "cs:maxFinalRoomLength"
+      Int: 15
+    }
+    Overrides {
+      Name: "cs:RandomStream"
       Float: 0
     }
     Overrides {
       Name: "cs:LevelGenerated"
       Bool: false
     }
+    Overrides {
+      Name: "cs:roomCount"
+      Int: 0
+    }
+    Overrides {
+      Name: "cs:LevelGenerated:isrep"
+      Bool: true
+    }
+    Overrides {
+      Name: "cs:roomCount:isrep"
+      Bool: true
+    }
   }
-  WantsNetworking: true
   Collidable_v2 {
     Value: "mc:ecollisionsetting:forceon"
   }

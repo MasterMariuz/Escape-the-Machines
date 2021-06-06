@@ -8,13 +8,10 @@ local propNewFolder = script:GetCustomProperty("NewFolder")
 local propTriggerRoom = script:GetCustomProperty("TriggerRoom")
 local propFloorFolder = script:GetCustomProperty("FloorFolder")
 
-
 local i, roomCount
-local LevelSpawned = false
-local LevelGenerated = script.parent.parent:GetCustomProperty("LevelGenerated")
 local player = World.FindObjectByName("player")
 
-local xyOffset = 200
+local xyOffset = script.parent.parent:GetCustomProperty("xyOffset")
 
 
 function SpawnRoom(i)
@@ -43,7 +40,7 @@ function SpawnRoom(i)
 	newPosition = Vector3.New(room[i].spawnX*xyOffset+(room[i].length*100), (room[i].spawnZ*xyOffset)+(room[i].depth*100), 300)
 	newScale = Vector3.New(room[i].length*2-1, room[i].depth*2-1, 6)
 	asset = World.SpawnAsset(propTriggerRoom, {position = newPosition, scale = newScale})
-	asset.name = "Trigger "..i
+	asset.name = tostring(i)
 	asset.parent = floorFolder
 	
 	--[[spawn room ceiling x,y
@@ -185,7 +182,6 @@ end
 
 function SpawnConnector(i)
 --depending on the size of the connection, will spawn different doors/connectors	
-	print("spawnConnector i:"..i)
 	room[i].activeConnector = true
 	
 	local m, asset,assetFolder,connectorFolder
@@ -461,6 +457,9 @@ end
 
 
 function PrintLinkedRooms()
+	print("*********************************")
+	print("*         LINKED ROOMS          *")
+	print("*********************************")
 	for i=1,roomCount do
 		local m =0
 		while (room[i].linkedRoom[m]~=0) do
@@ -468,6 +467,7 @@ function PrintLinkedRooms()
 			m=m+1
 		end
 		print("Total Links: "..m)
+		print()
 	end
 end
 
@@ -504,7 +504,7 @@ function UpdateActiveRooms (other)
 		end
 		i = PlayerCurrentRoom(other)
 		room[i].active = true
-		
+		print("entered Room: "..i)
 		m=0
 		while (room[i].linkedRoom[m]~=0) do
 			l = room[i].linkedRoom[m]
@@ -560,16 +560,20 @@ end
 
 function SpawnLevel()
 	print()
-	print()
-	print("*************SPAWNING MAP***************")
-	print()
-	print(roomCount.." rooms")
+	print("*********************************")
+	print("*       SPAWNING "..roomCount.." rooms       *")
+	print("*********************************")
 	for i=1,roomCount do
 		SpawnRoom(i)
+		Task.Wait()
 	end
 	SpawnConnector(2)
-	World.FindObjectByName("initialPlatform"):Destroy()
-	return true
+	local newColor = Color.New(155,55,0)
+	UI.PrintToScreen("Starting in 3...",newColor)
+	Task.Wait(1)
+	UI.PrintToScreen("2...",newColor)
+	Task.Wait(1)
+	UI.PrintToScreen("1...",newColor)
 end
 
 function SpawnInitialPlatform()
@@ -582,29 +586,24 @@ function SpawnInitialPlatform()
 end
 
 
-SpawnInitialPlatform()
-
-
-function Tick()
-	if (LevelGenerated == false) then
-		Task.Wait(1)
-		LevelGenerated = script.parent.parent.serverUserData.LevelGenerated
-	elseif (LevelGenerated == true) then
-		if(LevelSpawned == false) then
-			room = script.parent.parent.serverUserData.room
-			roomCount = script.parent.parent.serverUserData.roomCount
-			LevelSpawned = SpawnLevel()
-		end
-	end
+function initialize()
+	room = script.parent.parent.serverUserData.room
+	print(room)
+	print(script.parent.parent.serverUserData.room)
+	roomCount = script.parent.parent.serverUserData.roomCount
+	PrintLinkedRooms()
+	SpawnLevel()
+	World.FindObjectByName("initialPlatform"):Destroy()
 end
 
 
 
 
-
+SpawnInitialPlatform()
 
 
 --BROADCAST LISTENERS----------------------------------
+Events.Connect("LevelGenerated", initialize)
 Events.Connect("UpdateActiveRooms", UpdateActiveRooms)
 -------------------------------------------------------
 

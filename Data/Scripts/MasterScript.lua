@@ -2,8 +2,11 @@
 timeSeed = os.time()
 print("TimeSeed: " .. timeSeed)
 rand = RandomStream.New(timeSeed)
+
 room = {}
 intersectCount = 0
+
+local xyOffset = script.parent.parent:GetCustomProperty("xyOffset")
 
 --variables to tweak the floor creation
 mainRooms = script.parent.parent:GetCustomProperty("mainRooms")
@@ -34,9 +37,9 @@ end
 
 function initializeRoom (i)
 	local m 
-	room[i] = {length = 0, depth = 0, spawnX = 0, spawnZ = 0, tile = {} , linkedRoom = {}, spawnParentConnector = false, active, activeConnector}
-	--max linked rooms limit
-	for m=0,20 do
+	room[i] = {length = 0, depth = 0, spawnX = 0, spawnZ = 0, tile = {} , linkedRoom = {}, linkedRoomCount=0, spawnParentConnector = false, active, activeConnector}
+	--max linked rooms limit is 5
+	for m=0,4 do
 		room[i].linkedRoom[m]=0
 	end
 end
@@ -70,7 +73,8 @@ function GenerateLevel() -- Executes the calculations for the values of the new 
 	for m=1, extraRooms do
 		CreateRoom("extraRoom")
 	end
-	
+	script.parent.parent.serverUserData.room = room 
+	script.parent.parent.serverUserData.roomCount = roomCount
 	
 end
 
@@ -118,12 +122,14 @@ function CreateRoom(type)
 		-- randomDirection: 1 = north, 2 = south, 3 = east, 4 = west
 		randomDirection = rand:GetInteger(1,4) -- will find a direction to spawn a new room relative to the first room i
 		counter = counter + 1
-			
-		if(type=="mainRoute" or type=="finalRoom") then
-			k = i - 1 - math.floor(counter / 8) -- will check x loops before moving to a previous room (default:20)
-		elseif(type=="extraRoom") then
-			k = rand:GetInteger(2,roomCount)
-		end
+		
+		repeat
+			if(type=="mainRoute" or type=="finalRoom") then
+				k = i - 1 - math.floor(counter / 4) -- will check x loops before moving to a previous room (default:20)
+			elseif(type=="extraRoom") then
+				k = rand:GetInteger(2,roomCount)
+			end
+		until(room[k].linkedRoomCount<=3) --max linked rooms is 5
 
 		if(randomDirection == 1) then -- spawn on direction [1,0]
 			spawnX = room[k].spawnX + room[k].length +1
@@ -238,12 +244,14 @@ function AddLinkedRoom(i,k)
 		m = m+1
 	end
 	room[i].linkedRoom[m] = k
+	room[i].linkedRoomCount = room[i].linkedRoomCount+1
 
 	m=0
 	while (room[k].linkedRoom[m]~=0) do
 		m = m+1
 	end
 	room[k].linkedRoom[m] = i
+	room[k].linkedRoomCount = room[k].linkedRoomCount+1
 end
 
 
@@ -291,32 +299,61 @@ function CheckRoomIntersect (i,spawnX,spawnZ,newLength,newDepth)
 	return true
 end
 
+function PlayerCurrentRoom (other)
+	local i = 1
+	local player = other
+	local playerPosition = player:GetWorldPosition()
+	print(playerPosition)
+	while i<=roomCount do
+		print(player)
+		print(player.name)
+		if(playerPosition.x > room[i].spawnX*xyOffset and playerPosition.x < (room[i].spawnX+room[i].length)*xyOffset) then
+			if(playerPosition.y > room[i].spawnZ*xyOffset and playerPosition.y < (room[i].spawnZ+room[i].depth)*xyOffset) then
+				return i
+			end
+		end
+		i=i+1
+	end
+	return nil
+end
 
+
+function OnPlayerJoined (player)
+	local m, k
+	local i = PlayerCurrentRoom(player)
+	Events.BroadcastToPlayer(player,"newMapData",i,room[i].spawnX,room[i].spawnZ,room[i].length,room[i].depth)
+
+	for m=0,4 do
+		k=room[i].linkedRoom[m]
+		if(k>0) then
+			Events.BroadcastToPlayer(player,"newMapData",k,room[k].spawnX,room[k].spawnZ,room[k].length,room[k].depth)
+		end
+	end
+end
 
 GenerateLevel()
 
 
---BROADCASTERS----------------------------------------
---Task.Wait() --send broadcast 1 frame after all Listeners have been established
---Events.Broadcast("aaa")
-------------------------------------------------------
 
 --save server values for other scripts (like SpawnLevel) to access and start running
-script.parent.parent.serverUserData.room = room 
-script.parent.parent.serverUserData.roomCount = roomCount
-script.parent.parent.serverUserData.LevelGenerated = true
+
+
+
 
 --script.parent.parent:SetNetworkedCustomProperty("roomCount",roomCount) --the property must have Property Networking enabled in order to be able to modify it
 --script.parent.parent:SetNetworkedCustomProperty("LevelGenerated",true)
 
 
 
+--BROADCASTERS----------------------------------------
+--Task.Wait() --send broadcast 1 frame after all Listeners have been established
+Events.Broadcast("LevelGenerated")
+Events.BroadcastToAllPlayers("LevelGenerated")
+------------------------------------------------------
+local player = Game.FindNearestPlayer(Vector3.New(0,0,0))
+OnPlayerJoined(player)
 
-
-
-
-
-
+Game.playerJoinedEvent:Connect(OnPlayerJoined)
 
 
 

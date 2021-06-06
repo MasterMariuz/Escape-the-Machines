@@ -48,7 +48,7 @@ Objects {
   UnregisteredParameters {
     Overrides {
       Name: "cs:mainRooms"
-      Int: 50
+      Int: 30
     }
     Overrides {
       Name: "cs:rateExtraRooms"
@@ -75,20 +75,8 @@ Objects {
       Float: 0
     }
     Overrides {
-      Name: "cs:LevelGenerated"
-      Bool: false
-    }
-    Overrides {
-      Name: "cs:roomCount"
-      Int: 0
-    }
-    Overrides {
-      Name: "cs:LevelGenerated:isrep"
-      Bool: true
-    }
-    Overrides {
-      Name: "cs:roomCount:isrep"
-      Bool: true
+      Name: "cs:xyOffset"
+      Int: 200
     }
   }
   Collidable_v2 {

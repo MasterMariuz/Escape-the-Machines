@@ -15,7 +15,7 @@ Assets {
             Z: 1
           }
         }
-        ParentId: 6934341741998578798
+        ParentId: 15891078139384035645
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }
@@ -31,8 +31,6 @@ Assets {
         Control {
           Width: 200
           Height: 200
-          UIX: 50
-          UIY: 50
           RenderTransformPivot {
             Anchor {
               Value: "mc:euianchor:middlecenter"

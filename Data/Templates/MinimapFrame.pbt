@@ -1,13 +1,13 @@
 Assets {
-  Id: 8949298828942513446
-  Name: "MinimapPanel"
+  Id: 9343125362706566131
+  Name: "MinimapFrame"
   PlatformAssetType: 5
   TemplateAsset {
     ObjectBlock {
-      RootId: 3127430072903185095
+      RootId: 9824870687087658346
       Objects {
-        Id: 3127430072903185095
-        Name: "MinimapPanel"
+        Id: 9824870687087658346
+        Name: "MinimapFrame"
         Transform {
           Scale {
             X: 1
@@ -31,30 +31,50 @@ Assets {
         Control {
           Width: 400
           Height: 400
-          UIX: -20
-          UIY: -20
           RenderTransformPivot {
             Anchor {
               Value: "mc:euianchor:middlecenter"
             }
           }
-          Panel {
-            IsClipping: true
-            Opacity: 1
+          Image {
+            Brush {
+              Id: 8138708529629606323
+            }
+            Color {
+              R: 0.0213908069
+              B: 0.190000057
+              A: 1
+            }
+            TeamSettings {
+            }
+            ShadowColor {
+              A: 1
+            }
+            ShadowOffset {
+            }
           }
           AnchorLayout {
             SelfAnchor {
               Anchor {
-                Value: "mc:euianchor:bottomright"
+                Value: "mc:euianchor:topleft"
               }
             }
             TargetAnchor {
               Anchor {
-                Value: "mc:euianchor:bottomright"
+                Value: "mc:euianchor:topleft"
               }
             }
           }
         }
+      }
+    }
+    Assets {
+      Id: 8138708529629606323
+      Name: "Sci-fi Frame 007"
+      PlatformAssetType: 9
+      PrimaryAsset {
+        AssetType: "PlatformBrushAssetRef"
+        AssetId: "UI_Scifi_Frame_007"
       }
     }
     PrimaryAssetId {

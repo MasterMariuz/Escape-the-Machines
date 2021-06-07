@@ -178,9 +178,27 @@ Objects {
       }
     }
     Overrides {
+      Name: "cs:MinimapFrame"
+      AssetReference {
+        Id: 9343125362706566131
+      }
+    }
+    Overrides {
       Name: "cs:NewGroup"
       AssetReference {
         Id: 7757243214136105654
+      }
+    }
+    Overrides {
+      Name: "cs:MinimapPanelNoClipping"
+      AssetReference {
+        Id: 602957719577186066
+      }
+    }
+    Overrides {
+      Name: "cs:MinimapArrow"
+      AssetReference {
+        Id: 12123375182683240134
       }
     }
   }

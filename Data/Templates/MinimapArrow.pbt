@@ -1,13 +1,13 @@
 Assets {
-  Id: 8949298828942513446
-  Name: "MinimapPanel"
+  Id: 12123375182683240134
+  Name: "MinimapArrow"
   PlatformAssetType: 5
   TemplateAsset {
     ObjectBlock {
-      RootId: 3127430072903185095
+      RootId: 13169676435512446043
       Objects {
-        Id: 3127430072903185095
-        Name: "MinimapPanel"
+        Id: 13169676435512446043
+        Name: "MinimapArrow"
         Transform {
           Scale {
             X: 1
@@ -15,7 +15,7 @@ Assets {
             Z: 1
           }
         }
-        ParentId: 4781671109827199097
+        ParentId: 7028292050154282204
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }
@@ -29,32 +29,54 @@ Assets {
           Value: "mc:eindicatorvisibility:visiblewhenselected"
         }
         Control {
-          Width: 400
-          Height: 400
-          UIX: -20
-          UIY: -20
+          Width: 24
+          Height: 24
+          UIX: 188
+          UIY: 188
           RenderTransformPivot {
             Anchor {
               Value: "mc:euianchor:middlecenter"
             }
           }
-          Panel {
-            IsClipping: true
-            Opacity: 1
+          Image {
+            Brush {
+              Id: 18056787318024051379
+            }
+            Color {
+              R: 0.176688492
+              G: 0.919999957
+              A: 1
+            }
+            TeamSettings {
+            }
+            ShadowColor {
+              A: 1
+            }
+            ShadowOffset {
+            }
           }
           AnchorLayout {
             SelfAnchor {
               Anchor {
-                Value: "mc:euianchor:bottomright"
+                Value: "mc:euianchor:topleft"
               }
             }
             TargetAnchor {
               Anchor {
-                Value: "mc:euianchor:bottomright"
+                Value: "mc:euianchor:topleft"
               }
             }
           }
         }
+      }
+    }
+    Assets {
+      Id: 18056787318024051379
+      Name: "Center Arrow 004 Wedge"
+      PlatformAssetType: 9
+      PrimaryAsset {
+        AssetType: "PlatformBrushAssetRef"
+        AssetId: "CenterArrow_004Wedge"
       }
     }
     PrimaryAssetId {

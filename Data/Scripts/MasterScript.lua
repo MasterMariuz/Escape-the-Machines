@@ -303,10 +303,7 @@ function PlayerCurrentRoom (other)
 	local i = 1
 	local player = other
 	local playerPosition = player:GetWorldPosition()
-	print(playerPosition)
 	while i<=roomCount do
-		print(player)
-		print(player.name)
 		if(playerPosition.x > room[i].spawnX*xyOffset and playerPosition.x < (room[i].spawnX+room[i].length)*xyOffset) then
 			if(playerPosition.y > room[i].spawnZ*xyOffset and playerPosition.y < (room[i].spawnZ+room[i].depth)*xyOffset) then
 				return i
@@ -334,16 +331,8 @@ end
 GenerateLevel()
 
 
-
---save server values for other scripts (like SpawnLevel) to access and start running
-
-
-
-
 --script.parent.parent:SetNetworkedCustomProperty("roomCount",roomCount) --the property must have Property Networking enabled in order to be able to modify it
 --script.parent.parent:SetNetworkedCustomProperty("LevelGenerated",true)
-
-
 
 --BROADCASTERS----------------------------------------
 --Task.Wait() --send broadcast 1 frame after all Listeners have been established
@@ -351,9 +340,7 @@ Events.Broadcast("LevelGenerated")
 Events.BroadcastToAllPlayers("LevelGenerated")
 ------------------------------------------------------
 local player = Game.FindNearestPlayer(Vector3.New(0,0,0))
-OnPlayerJoined(player)
-
-Game.playerJoinedEvent:Connect(OnPlayerJoined)
+--Game.playerJoinedEvent:Connect(OnPlayerJoined)
 
 
 

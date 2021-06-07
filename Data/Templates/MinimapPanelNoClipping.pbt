@@ -1,12 +1,12 @@
 Assets {
-  Id: 8949298828942513446
-  Name: "MinimapPanel"
+  Id: 602957719577186066
+  Name: "MinimapPanelNoClipping"
   PlatformAssetType: 5
   TemplateAsset {
     ObjectBlock {
-      RootId: 3127430072903185095
+      RootId: 7080634336992780477
       Objects {
-        Id: 3127430072903185095
+        Id: 7080634336992780477
         Name: "MinimapPanel"
         Transform {
           Scale {
@@ -15,7 +15,7 @@ Assets {
             Z: 1
           }
         }
-        ParentId: 4781671109827199097
+        ParentId: 15891078139384035645
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }
@@ -39,7 +39,6 @@ Assets {
             }
           }
           Panel {
-            IsClipping: true
             Opacity: 1
           }
           AnchorLayout {

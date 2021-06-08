@@ -7,6 +7,7 @@ local propCorner01 = script:GetCustomProperty("Corner01")
 local propNewFolder = script:GetCustomProperty("NewFolder")
 local propTriggerRoom = script:GetCustomProperty("TriggerRoom")
 local propFloorFolder = script:GetCustomProperty("FloorFolder")
+local propTrigger = script:GetCustomProperty("Trigger")
 
 local i, roomCount
 local player = World.FindObjectByName("player")
@@ -24,7 +25,7 @@ function SpawnRoom(i)
 	
 	floorFolder = World.FindObjectByName("Room "..i)
 	if(floorFolder == nil) then
-		floorFolder = World.SpawnAsset(propFloorFolder)
+		floorFolder = World.SpawnAsset(propNewFolder)
 		floorFolder.name = "Room "..i
 		floorFolder.parent = script.parent
 	end
@@ -190,14 +191,14 @@ function SpawnConnector(i)
 
 	connectorFolder = World.FindObjectByName("Connectors")
 	if(connectorFolder == nil) then
-		connectorFolder = World.SpawnAsset(propFloorFolder)
+		connectorFolder = World.SpawnAsset(propNewFolder)
 		connectorFolder.name = "Connectors"
 		connectorFolder.parent = script.parent
 	end
 	
 	assetFolder = World.FindObjectByName("Room "..i.." ParentConnector")
 	if(assetFolder == nil) then
-		assetFolder =  World.SpawnAsset(propFloorFolder)
+		assetFolder =  World.SpawnAsset(propNewFolder)
 		assetFolder.name = "Room "..i.." ParentConnector"
 		assetFolder.parent = connectorFolder
 	end
@@ -271,6 +272,14 @@ function SpawnConnector(i)
 			asset.name = "ConnectorFloor"
 			asset.parent = assetFolder
 			
+			--door (no door)
+			newPosition = Vector3.New((room[i].spawnX)*xyOffset+offsetX, ((room[i].spawnZ+startConnector+(counter/2))*xyOffset)+offsetY, 300)
+			newScale = Vector3.New(2,2,6)
+			asset = World.SpawnAsset(propTrigger, {position = newPosition, scale = newScale})
+			asset.name = tostring(i)
+			asset.parent = assetFolder
+			asset:SetNetworkedCustomProperty("doorType","Corridor")
+			
 		elseif(counter>=2 and counter<=3) then
 			--floor
 			newPosition = Vector3.New((room[i].spawnX)*xyOffset+offsetX, ((room[i].spawnZ+startConnector+(counter/2))*xyOffset)+offsetY, -25)
@@ -283,8 +292,9 @@ function SpawnConnector(i)
 			newScale = Vector3.New(1,1,1)
 			newRotation = Rotation.New(0,0,90)
 			asset = World.SpawnAsset(propDoor2x1, {position = newPosition, scale = newScale, rotation = newRotation})
-			asset.name = "ConnectorDoor"
+			asset.name = tostring(i)
 			asset.parent = assetFolder
+			asset:SetNetworkedCustomProperty("doorType","Door1x2")
 			
 			--walls
 			if(counter > 2) then
@@ -308,8 +318,9 @@ function SpawnConnector(i)
 			newScale = Vector3.New(1,1,1)
 			newRotation = Rotation.New(0,0,90)
 			asset = World.SpawnAsset(propDoor4x1, {position = newPosition, scale = newScale, rotation = newRotation})	
-			asset.name = "ConnectorDoor"
+			asset.name = tostring(i)
 			asset.parent = assetFolder
+			asset:SetNetworkedCustomProperty("doorType", "Door1x4")
 			--walls
 			for m=1, counter-4 do -- walls spawn only when counter is 5 or more
 				newPosition = Vector3.New((room[i].spawnX)*xyOffset+offsetX, ((room[i].spawnZ+startConnector+m)*xyOffset+700)+offsetY, 0)
@@ -333,8 +344,9 @@ function SpawnConnector(i)
 				newScale = Vector3.New(1,1,1)
 				newRotation = Rotation.New(0,0,90)
 				asset = World.SpawnAsset(propDoor4x1, {position = newPosition, scale = newScale, rotation = newRotation})
-				asset.name = "ConnectorDoor "..(m+1)
+				asset.name = tostring(i)
 				asset.parent = assetFolder
+				asset:SetNetworkedCustomProperty("doorType", "Door1x4")
 			end
 			--walls
 			-- wall between the 2 doors
@@ -342,7 +354,7 @@ function SpawnConnector(i)
 			newScale = Vector3.New(2,1,1)
 			newRotation = Rotation.New(0,0,0)
 			asset = World.SpawnAsset(propWall01, {position = newPosition, scale = newScale, rotation = newRotation})
-			asset.name = "ConnectorFloor"
+			asset.name = "ConnectorWall 1"
 			asset.parent = assetFolder
 			-- walls after the 2nd door
 			for m=1, counter-9 do -- walls spawn only when counter is 10 or more
@@ -350,7 +362,7 @@ function SpawnConnector(i)
 				newScale = Vector3.New(2,1,1)
 				newRotation = Rotation.New(0,0,0)
 				assets = World.SpawnAsset(propWall01, {position = newPosition, scale = newScale, rotation = newRotation})
-				asset.name = "ConnectorDoor "..(m+1)
+				asset.name = "ConnectorWall "..(m+1)
 				asset.parent = assetFolder
 			end
 		end
@@ -366,6 +378,14 @@ function SpawnConnector(i)
 			asset = World.SpawnAsset(propFloor01, {position = newPosition, scale = newScale})
 			asset.name = "ConnectorFloor"
 			asset.parent = assetFolder
+			
+			--door (no door)
+			newPosition = Vector3.New((room[i].spawnX+startConnector+(counter/2))*xyOffset+offsetX, (room[i].spawnZ*xyOffset)+offsetY, -25)
+			newScale = Vector3.New(2,2,6)
+			asset = World.SpawnAsset(propTrigger, {position = newPosition, scale = newScale})
+			asset.name = tostring(i)
+			asset.parent = assetFolder
+			asset:SetNetworkedCustomProperty("doorType","Corridor")
 						
 		elseif(counter>=2 and counter<=3) then
 			--floor
@@ -379,8 +399,9 @@ function SpawnConnector(i)
 			newScale = Vector3.New(1,1,1)
 			newRotation = Rotation.New(0,0,0)
 			asset = World.SpawnAsset(propDoor2x1, {position = newPosition, scale = newScale, rotation = newRotation})
-			asset.name = "ConnectorDoor"
+			asset.name = tostring(i)
 			asset.parent = assetFolder
+			asset:SetNetworkedCustomProperty("doorType", "Door2x1")
 			--walls
 			if(counter > 2) then
 				newPosition = Vector3.New((room[i].spawnX+startConnector+(counter/2))*xyOffset+200+offsetX, ((room[i].spawnZ)*xyOffset+offsetY), 0)
@@ -404,8 +425,9 @@ function SpawnConnector(i)
 			newScale = Vector3.New(1,1,1)
 			newRotation = Rotation.New(0,0,0)
 			asset = World.SpawnAsset(propDoor4x1, {position = newPosition, scale = newScale, rotation = newRotation})	
-			asset.name = "ConnectorDoor"
+			asset.name = tostring(i)
 			asset.parent = assetFolder
+			asset:SetNetworkedCustomProperty("doorType", "Door4x1")
 			--walls
 			for m=1, counter-4 do -- walls spawn only when counter is 5 or more
 				newPosition = Vector3.New((room[i].spawnX+startConnector+m)*xyOffset+700+offsetX, ((room[i].spawnZ)*xyOffset)+offsetY, 0)
@@ -431,8 +453,9 @@ function SpawnConnector(i)
 				newScale = Vector3.New(1,1,1)
 				newRotation = Rotation.New(0,0,0)
 				asset = World.SpawnAsset(propDoor4x1, {position = newPosition, scale = newScale, rotation = newRotation})	
-				asset.name = "ConnectorDoor "..(m+1)
+				asset.name = tostring(i)
 				asset.parent = assetFolder
+				asset:SetNetworkedCustomProperty("doorType", "Door4x1")
 			end
 			--walls
 			-- wall between the 2 doors
@@ -440,7 +463,7 @@ function SpawnConnector(i)
 			newScale = Vector3.New(2,1,1)
 			newRotation = Rotation.New(0,0,90)
 			asset = World.SpawnAsset(propWall01, {position = newPosition, scale = newScale, rotation = newRotation})
-			asset.name = "ConnectorWall"
+			asset.name = "ConnectorWall 1"
 			asset.parent = assetFolder
 			-- walls after the 2nd door
 			for m=1, counter-9 do -- walls spawn only when counter is 10 or more
@@ -448,7 +471,7 @@ function SpawnConnector(i)
 				newScale = Vector3.New(2,1,1)
 				newRotation = Rotation.New(0,0,90)
 				asset = World.SpawnAsset(propWall01, {position = newPosition, scale = newScale, rotation = newRotation})
-				asset.name = "ConnectorWall "..m
+				asset.name = "ConnectorWall "..(m+1)
 				asset.parent = assetFolder
 			end
 		end

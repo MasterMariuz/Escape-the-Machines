@@ -18,6 +18,16 @@ Assets {
         ParentId: 4781671109827199097
         ChildIds: 14435796167966572154
         ChildIds: 2042990314813488615
+        UnregisteredParameters {
+          Overrides {
+            Name: "cs:doorType"
+            String: ""
+          }
+          Overrides {
+            Name: "cs:doorType:isrep"
+            Bool: true
+          }
+        }
         WantsNetworking: true
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"

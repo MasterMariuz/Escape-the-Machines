@@ -12,9 +12,13 @@ local propMinimapArrow = script.parent:GetCustomProperty("MinimapArrow")
 local mapData = {}
 local block = {}
 local activeBlocks = {}
+local doorData = {}
+local doorAsset= {}
+local activeDoors= {}
 local xyRatio = 10
 local minimapPanelSpawned = false
 local colorBlock = {previous, current, change = false}
+local blockBorder = 8
 
 script.parent.parent.clientUserData.mapData = mapData
 
@@ -69,16 +73,17 @@ end
 function UpdateMapData(i,ix,iz,ilength,idepth)
 	print("Updating Map!")
 	if(mapData[i] == nil) then 
-		mapData[i] = {x = ix, y = iz, height = idepth, width = ilength}
+		mapData[i] = {x = ix *xyRatio, y = iz *xyRatio, height = idepth *xyRatio, width = ilength *xyRatio}
 		print('new registered room width: '..mapData[i].width)
 		table.insert(activeBlocks,i)
 		block[i] = World.SpawnAsset(propMinimapBlock)
 		block[i].parent = MinimapCenterPivot
 		block[i].name = "Block "..i
-		block[i].x = mapData[i].x *xyRatio - localPlayer:GetWorldPosition().x/20
-		block[i].y = mapData[i].y *xyRatio - localPlayer:GetWorldPosition().y/20
-		block[i].width = mapData[i].width *xyRatio
-		block[i].height = mapData[i].height *xyRatio
+		block[i].x = mapData[i].x - localPlayer:GetWorldPosition().x/20
+		block[i].y = mapData[i].y - localPlayer:GetWorldPosition().y/20
+		block[i].width = mapData[i].width +blockBorder --the value added is to create an outer border on each block
+		block[i].height = mapData[i].height +blockBorder
+		block[i]:SetColor(Color.New(0.5,0,0.9,0.8))
 		MinimapArrow.parent = MinimapPanel
 	end
 	colorBlock.previous = colorBlock.current
@@ -94,15 +99,25 @@ function UpdateBlockPositions()
 	local m,i
 	for m=1, #activeBlocks do
 		i= activeBlocks[m]
-		block[i].x = mapData[i].x *xyRatio - localPlayer:GetWorldPosition().x/20
-		block[i].y = mapData[i].y *xyRatio - localPlayer:GetWorldPosition().y/20
+		block[i].x = mapData[i].x - localPlayer:GetWorldPosition().x/20 -blockBorder/2 --the value substracted is equal to the value of the added border /2
+		block[i].y = mapData[i].y - localPlayer:GetWorldPosition().y/20 -blockBorder/2
 	end	
 end
+
+function UpdateDoorPositions()
+	local m,i
+	for m=1, #activeDoors do
+		i= activeDoors[m]
+		doorAsset[i].x = doorData[i].x - localPlayer:GetWorldPosition().x/20
+		doorAsset[i].y = doorData[i].y - localPlayer:GetWorldPosition().y/20
+		doorAsset[i].parent = doorAsset[i].parent --to show the Doors on top of the Blocks in the Minimap
+	end	
+end
+
 
 function UpdatePivotRotation()
 	local playerRotation = localPlayer:GetViewWorldRotation()
 	MinimapCenterPivot.rotationAngle = playerRotation.z*-1 -90
-
 end
 
 function UpdateColorBlocks()
@@ -114,11 +129,65 @@ function UpdateColorBlocks()
 end
 
 
+function SpawnNewDoor(i,doorX,doorY,doorType)
+	print("i:"..i)
+	print(doorData[i])
+	if(doorData[i]==nil) then
+		doorData[i] = {x = doorX /20, y = doorY /20, type = doorType}
+		print("new Door x:"..doorData[i].x.." y:"..doorData[i].y)
+		table.insert(activeDoors,i)
+		doorAsset[i] = World.SpawnAsset(propMinimapBlock, {parent = MinimapCenterPivot})
+		doorAsset[i].name = "Door "..i
+		print("door type")
+		print(doorData[i].type)
+		
+		--doorAsset[i].x = doorData[i].x - localPlayer:GetWorldPosition().x/20
+		--doorAsset[i].y = doorData[i].y - localPlayer:GetWorldPosition().y/20
+		if(doorData[i].type == "Corridor") then
+			doorData[i].width = 1 *xyRatio
+			doorData[i].height = 1 *xyRatio
+			doorData[i].x = doorData[i].x -5
+			doorData[i].y = doorData[i].y -5
+		elseif(doorData[i].type == "Door1x2") then
+			doorData[i].width = 1 *xyRatio
+			doorData[i].height = 2 *xyRatio
+			doorData[i].x = doorData[i].x -5
+		elseif(doorData[i].type == "Door2x1") then
+			doorData[i].width = 2 *xyRatio
+			doorData[i].height = 1 *xyRatio
+			doorData[i].y = doorData[i].y -5
+		elseif(doorData[i].type == "Door1x4") then
+			doorData[i].width = 1 *xyRatio
+			doorData[i].height = 4 *xyRatio
+			doorData[i].x = doorData[i].x -5
+		elseif(doorData[i].type == "Door4x1") then
+			doorData[i].width = 4 *xyRatio
+			doorData[i].height = 1 *xyRatio
+			doorData[i].y = doorData[i].y -5
+		elseif(doorData[i].type == "DoubleDoor1x4") then
+			doorData[i].width = 1 *xyRatio
+			doorData[i].height = 9 *xyRatio
+			doorData[i].x = doorData[i].x -5
+		elseif(doorData[i].type == "DoubleDoor4x1") then
+			doorData[i].width = 9 *xyRatio
+			doorData[i].height = 1 *xyRatio
+			doorData[i].y = doorData[i].y -5
+		end
+		doorAsset[i].width = doorData[i].width
+		doorAsset[i].height = doorData[i].height
+		doorAsset[i]:SetColor(Color.New(0.8,0.9,0,1))
+		
+	end
+	
+
+end
+
 
 
 function Tick()
 	if(localPlayer and minimapPanelSpawned) then
 		UpdateBlockPositions()
+		UpdateDoorPositions()
 		UpdatePivotRotation()
 		if(#activeBlocks > 1) then
 			UpdateColorBlocks()
@@ -131,3 +200,4 @@ end
 
 Events.Connect("LevelGenerated",SpawnMinimap)
 Events.Connect("newMapData",UpdateMapData)
+Events.Connect("DoorOpened",SpawnNewDoor)

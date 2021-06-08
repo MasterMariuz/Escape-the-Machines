@@ -96,6 +96,12 @@ Objects {
         Id: 16962570200718933532
       }
     }
+    Overrides {
+      Name: "cs:Trigger"
+      AssetReference {
+        Id: 12158176512114773155
+      }
+    }
   }
   Collidable_v2 {
     Value: "mc:ecollisionsetting:inheritfromparent"

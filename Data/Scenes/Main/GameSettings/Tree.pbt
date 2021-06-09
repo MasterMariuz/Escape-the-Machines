@@ -93,6 +93,7 @@ Objects {
   ChildIds: 13551641546322277000
   ChildIds: 7155168770677928712
   ChildIds: 10505154200474359396
+  ChildIds: 8468628913998974053
   UnregisteredParameters {
   }
   Collidable_v2 {
@@ -109,6 +110,61 @@ Objects {
   }
 }
 Objects {
+  Id: 8468628913998974053
+  Name: "Environment Fog Default VFX"
+  Transform {
+    Location {
+    }
+    Rotation {
+    }
+    Scale {
+      X: 1
+      Y: 1
+      Z: 1
+    }
+  }
+  ParentId: 10005074784157121906
+  UnregisteredParameters {
+    Overrides {
+      Name: "bp:Color"
+      Color {
+        A: 1
+      }
+    }
+    Overrides {
+      Name: "bp:Fog Density"
+      Float: 40
+    }
+    Overrides {
+      Name: "bp:Falloff"
+      Float: 40
+    }
+    Overrides {
+      Name: "bp:Start"
+      Float: 2000
+    }
+  }
+  Collidable_v2 {
+    Value: "mc:ecollisionsetting:inheritfromparent"
+  }
+  Visible_v2 {
+    Value: "mc:evisibilitysetting:inheritfromparent"
+  }
+  CameraCollidable {
+    Value: "mc:ecollisionsetting:inheritfromparent"
+  }
+  EditorIndicatorVisibility {
+    Value: "mc:eindicatorvisibility:visiblewhenselected"
+  }
+  Blueprint {
+    BlueprintAsset {
+      Id: 5773220180086757772
+    }
+    TeamSettings {
+    }
+  }
+}
+Objects {
   Id: 10505154200474359396
   Name: "Sun Light"
   Transform {
@@ -116,9 +172,7 @@ Objects {
       X: 450
     }
     Rotation {
-      Pitch: -45.8452454
-      Yaw: 33.9371338
-      Roll: 8.92731857
+      Pitch: -90
     }
     Scale {
       X: 1
@@ -136,18 +190,20 @@ Objects {
       Name: "bp:Light Color"
       Color {
         R: 1
-        G: 0.955973327
-        B: 0.73791039
+        G: 1
+        B: 1
         A: 1
       }
     }
     Overrides {
       Name: "bp:Shape"
-      Int: 1
+      Enum {
+        Value: "mc:esundiscshapes:6"
+      }
     }
     Overrides {
       Name: "bp:Size"
-      Float: 5
+      Float: 4.99335957
     }
     Overrides {
       Name: "bp:Light Shaft Bloom"
@@ -163,7 +219,7 @@ Objects {
     }
     Overrides {
       Name: "bp:Intensity"
-      Float: 3.5
+      Float: 1.5022707
     }
     Overrides {
       Name: "bp:Sun Disc Color"
@@ -194,6 +250,14 @@ Objects {
         B: 0.77
         A: 1
       }
+    }
+    Overrides {
+      Name: "bp:Draw Sun"
+      Bool: false
+    }
+    Overrides {
+      Name: "bp:Cast Shadows"
+      Bool: true
     }
   }
   Collidable_v2 {
@@ -238,7 +302,7 @@ Objects {
     }
     Overrides {
       Name: "bp:Intensity"
-      Float: 3
+      Float: 1.57460022
     }
     Overrides {
       Name: "bp:Lower Hemisphere Color"
@@ -272,10 +336,16 @@ Objects {
     Overrides {
       Name: "bp:Tint Color"
       Color {
-        R: 0.502886474
-        G: 0.48514995
-        B: 0.752942204
+        R: 1
+        G: 1
+        B: 1
         A: 1
+      }
+    }
+    Overrides {
+      Name: "bp:Ambient Image"
+      Enum {
+        Value: "mc:eambientcubemapssmall:23"
       }
     }
   }
@@ -390,7 +460,7 @@ Objects {
     }
     Overrides {
       Name: "bp:Brightness"
-      Float: 1
+      Float: 0.991403699
     }
     Overrides {
       Name: "bp:Background Clouds"
@@ -411,6 +481,12 @@ Objects {
     Overrides {
       Name: "bp:High Cloud Noise Scale"
       Float: 0.2
+    }
+    Overrides {
+      Name: "bp:Overall Tint"
+      Color {
+        A: 1
+      }
     }
   }
   Collidable_v2 {
@@ -756,7 +832,7 @@ Objects {
     Location {
       X: 200
       Y: 200
-      Z: 1200
+      Z: 3000
     }
     Rotation {
     }

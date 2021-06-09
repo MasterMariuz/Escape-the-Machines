@@ -126,6 +126,10 @@ function CreateRoom(type)
 		repeat
 			if(type=="mainRoute" or type=="finalRoom") then
 				k = i - 1 - math.floor(counter / 4) -- will check x loops before moving to a previous room (default:20)
+				if(i>=3 and k==1) then
+					counter=0
+					k=2
+				end
 			elseif(type=="extraRoom") then
 				k = rand:GetInteger(2,roomCount)
 			end
@@ -263,7 +267,7 @@ function CheckRoomIntersect (i,spawnX,spawnZ,newLength,newDepth)
 	repeat
 		--delay every x loops to prevent instruction limit exceeded error
 		counter = counter+1
-		if (counter==100) then
+		if (counter==50) then
 			Task.Wait()
 			counter =0
 		end
@@ -315,17 +319,13 @@ function PlayerCurrentRoom (other)
 end
 
 
-function OnPlayerJoined (player)
-	local m, k
-	local i = PlayerCurrentRoom(player)
-	Events.BroadcastToPlayer(player,"newMapData",i,room[i].spawnX,room[i].spawnZ,room[i].length,room[i].depth)
+function SpawnInitialMinimapRoom (localPlayer)
+	print("OK")
+	Events.BroadcastToPlayer(localPlayer,"newMapData",1,room[1].spawnX,room[1].spawnZ,room[1].length,room[1].depth)
+end
 
-	for m=0,4 do
-		k=room[i].linkedRoom[m]
-		if(k>0) then
-			Events.BroadcastToPlayer(player,"newMapData",k,room[k].spawnX,room[k].spawnZ,room[k].length,room[k].depth)
-		end
-	end
+function OnPlayerJoined (player)
+	
 end
 
 GenerateLevel()
@@ -334,13 +334,19 @@ GenerateLevel()
 --script.parent.parent:SetNetworkedCustomProperty("roomCount",roomCount) --the property must have Property Networking enabled in order to be able to modify it
 --script.parent.parent:SetNetworkedCustomProperty("LevelGenerated",true)
 
+--local player = Game.FindNearestPlayer(Vector3.New(0,0,0))
+
+
+--LISTENERS--------------------------------------------------
+Events.ConnectForPlayer("MinimapSpawned",SpawnInitialMinimapRoom)
+-------------------------------------------------------------
+
+
 --BROADCASTERS----------------------------------------
 --Task.Wait() --send broadcast 1 frame after all Listeners have been established
 Events.Broadcast("LevelGenerated")
 Events.BroadcastToAllPlayers("LevelGenerated")
 ------------------------------------------------------
-local player = Game.FindNearestPlayer(Vector3.New(0,0,0))
---Game.playerJoinedEvent:Connect(OnPlayerJoined)
 
 
 

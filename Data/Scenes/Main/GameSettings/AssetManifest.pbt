@@ -34,3 +34,12 @@ Assets {
     AssetId: "CORESKY_Sky"
   }
 }
+Assets {
+  Id: 5773220180086757772
+  Name: "Environment Fog Default VFX"
+  PlatformAssetType: 6
+  PrimaryAsset {
+    AssetType: "BlueprintAssetRef"
+    AssetId: "fxbp_env_fog_default"
+  }
+}

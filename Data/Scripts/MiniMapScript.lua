@@ -201,3 +201,5 @@ end
 Events.Connect("LevelGenerated",SpawnMinimap)
 Events.Connect("newMapData",UpdateMapData)
 Events.Connect("DoorOpened",SpawnNewDoor)
+Task.Wait(1)
+Events.BroadcastToServer("MinimapSpawned",localPlayer)

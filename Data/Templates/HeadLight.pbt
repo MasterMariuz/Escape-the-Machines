@@ -316,6 +316,7 @@ Assets {
         ChildIds: 15395766773549037240
         ChildIds: 1054148397073365977
         ChildIds: 1061684818475705753
+        WantsNetworking: true
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }
@@ -367,6 +368,7 @@ Assets {
             Bool: true
           }
         }
+        WantsNetworking: true
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }
@@ -413,6 +415,7 @@ Assets {
           }
         }
         ParentId: 14526541032300218827
+        WantsNetworking: true
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }
@@ -426,7 +429,7 @@ Assets {
           Value: "mc:eindicatorvisibility:visiblewhenselected"
         }
         Light {
-          Intensity: 5
+          Intensity: 3
           Color {
             R: 1
             G: 1
@@ -493,6 +496,7 @@ Assets {
             }
           }
         }
+        WantsNetworking: true
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }

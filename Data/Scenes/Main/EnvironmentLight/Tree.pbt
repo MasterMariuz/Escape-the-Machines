@@ -9,9 +9,9 @@ Objects {
     Rotation {
     }
     Scale {
-      X: 10
-      Y: 10
-      Z: 10
+      X: 1
+      Y: 1
+      Z: 1
     }
   }
   ParentId: 12798253316288337425
@@ -155,6 +155,82 @@ Objects {
     }
   }
   ParentId: 4807121007309138193
+  UnregisteredParameters {
+    Overrides {
+      Name: "bp:Fog Object"
+      ObjectReference {
+        SelfId: 8468628913998974053
+      }
+    }
+    Overrides {
+      Name: "bp:Volume Type"
+      Enum {
+        Value: "mc:evolumetype:0"
+      }
+    }
+    Overrides {
+      Name: "bp:Blend Duration"
+      Float: 0.702351511
+    }
+    Overrides {
+      Name: "bp:Beam View Direction"
+      Float: 0.05
+    }
+    Overrides {
+      Name: "bp:Light Absorption Amount"
+      Float: 0.632048547
+    }
+    Overrides {
+      Name: "bp:Start"
+      Float: 2000
+    }
+    Overrides {
+      Name: "bp:Fog Density"
+      Float: 0
+    }
+    Overrides {
+      Name: "bp:Falloff"
+      Float: 0.05
+    }
+    Overrides {
+      Name: "bp:Color"
+      Color {
+        A: 1
+      }
+    }
+    Overrides {
+      Name: "bp:Layered Fog Falloff"
+      Float: 3.86569595
+    }
+    Overrides {
+      Name: "bp:Layered Fog Density"
+      Float: 7.64343929
+    }
+    Overrides {
+      Name: "bp:Layered Fog Offset Height"
+      Float: 15.3015289
+    }
+    Overrides {
+      Name: "bp:Directional Inscattering Color"
+      Color {
+        R: 0.700000048
+        G: 3.33786033e-07
+        A: 1
+      }
+    }
+    Overrides {
+      Name: "bp:Directional Inscattering Exponent"
+      Float: 2
+    }
+    Overrides {
+      Name: "bp:Directional Inscattering Start Distance"
+      Float: 10726.1123
+    }
+    Overrides {
+      Name: "bp:Opacity"
+      Float: 0.855335593
+    }
+  }
   Collidable_v2 {
     Value: "mc:ecollisionsetting:inheritfromparent"
   }

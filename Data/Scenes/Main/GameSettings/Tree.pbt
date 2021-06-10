@@ -133,15 +133,52 @@ Objects {
     }
     Overrides {
       Name: "bp:Fog Density"
-      Float: 40
+      Float: 20
     }
     Overrides {
       Name: "bp:Falloff"
-      Float: 40
+      Float: 0.05
     }
     Overrides {
       Name: "bp:Start"
       Float: 2000
+    }
+    Overrides {
+      Name: "bp:Directional Inscattering Exponent"
+      Float: 3.72016859
+    }
+    Overrides {
+      Name: "bp:Directional Inscattering Color"
+      Color {
+        R: 0.53
+        G: 2.5272368e-07
+        A: 1
+      }
+    }
+    Overrides {
+      Name: "bp:Layered Fog Density"
+      Float: 0
+    }
+    Overrides {
+      Name: "bp:Volumetric Fog"
+      Bool: false
+    }
+    Overrides {
+      Name: "bp:Light Absorption Amount"
+      Float: 0.1
+    }
+    Overrides {
+      Name: "bp:Albedo"
+      Color {
+        R: 1
+        G: 1
+        B: 1
+        A: 1
+      }
+    }
+    Overrides {
+      Name: "bp:Opacity"
+      Float: 1
     }
   }
   Collidable_v2 {
@@ -214,12 +251,8 @@ Objects {
       Bool: false
     }
     Overrides {
-      Name: "bp:Light Shaft Mask Darkness"
-      Float: 0.5
-    }
-    Overrides {
       Name: "bp:Intensity"
-      Float: 1.5022707
+      Float: 1.55933833
     }
     Overrides {
       Name: "bp:Sun Disc Color"
@@ -231,23 +264,14 @@ Objects {
       }
     }
     Overrides {
-      Name: "bp:Light Shaft Bloom Scale"
-      Float: 0.2
-    }
-    Overrides {
-      Name: "bp:Light Shaft Bloom Threshold"
-      Float: 0.05
-    }
-    Overrides {
       Name: "bp:Light Shaft Occlusion"
       Bool: true
     }
     Overrides {
       Name: "bp:Light Shaft Bloom Tint"
       Color {
-        R: 1
-        G: 0.998476863
-        B: 0.77
+        R: 0.380208343
+        G: 0.196399018
         A: 1
       }
     }
@@ -302,13 +326,14 @@ Objects {
     }
     Overrides {
       Name: "bp:Intensity"
-      Float: 1.57460022
+      Float: 1.33460951
     }
     Overrides {
       Name: "bp:Lower Hemisphere Color"
       Color {
-        R: 0.0666259378
-        G: 0.0307134502
+        R: 0.026041666
+        G: 0.026041666
+        B: 0.026041666
         A: 1
       }
     }
@@ -830,8 +855,8 @@ Objects {
   Name: "Spawn Point"
   Transform {
     Location {
-      X: 200
-      Y: 200
+      X: 400
+      Y: 400
       Z: 3000
     }
     Rotation {

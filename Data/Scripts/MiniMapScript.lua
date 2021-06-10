@@ -72,27 +72,27 @@ end
 
 function UpdateMapData(i,ix,iz,ilength,idepth)
 	print("Updating Map!")
-	if(mapData[i] == nil) then 
-		mapData[i] = {x = ix *xyRatio, y = iz *xyRatio, height = idepth *xyRatio, width = ilength *xyRatio}
-		print('new registered room width: '..mapData[i].width)
-		table.insert(activeBlocks,i)
-		block[i] = World.SpawnAsset(propMinimapBlock)
-		block[i].parent = MinimapCenterPivot
-		block[i].name = "Block "..i
-		block[i].x = mapData[i].x - localPlayer:GetWorldPosition().x/20
-		block[i].y = mapData[i].y - localPlayer:GetWorldPosition().y/20
-		block[i].width = mapData[i].width +blockBorder --the value added is to create an outer border on each block
-		block[i].height = mapData[i].height +blockBorder
-		block[i]:SetColor(Color.New(0.5,0,0.9,0.8))
+	if(Object.IsValid(MinimapArrow)==true) then
+		if(mapData[i] == nil) then 
+			mapData[i] = {x = ix *xyRatio, y = iz *xyRatio, height = idepth *xyRatio, width = ilength *xyRatio}
+			print('new registered room width: '..mapData[i].width)
+			table.insert(activeBlocks,i)
+			block[i] = World.SpawnAsset(propMinimapBlock)
+			block[i].parent = MinimapCenterPivot
+			block[i].name = "Block "..i
+			block[i].x = mapData[i].x - localPlayer:GetWorldPosition().x/20
+			block[i].y = mapData[i].y - localPlayer:GetWorldPosition().y/20
+			block[i].width = mapData[i].width +blockBorder --the value added is to create an outer border on each block
+			block[i].height = mapData[i].height +blockBorder
+			block[i]:SetColor(Color.New(0.5,0,0.9,0.8))
+		end
+		colorBlock.previous = colorBlock.current
+		colorBlock.current = i
+		if(colorBlock.current == colorBlock.previous) then else
+			colorBlock.change = true
+		end
 		MinimapArrow.parent = MinimapPanel
 	end
-	colorBlock.previous = colorBlock.current
-	colorBlock.current = i
-	if(colorBlock.current == colorBlock.previous) then else
-		colorBlock.change = true
-	end
-
-
 end
 
 function UpdateBlockPositions()
@@ -197,9 +197,13 @@ function Tick()
 	end
 end
 
-
-Events.Connect("LevelGenerated",SpawnMinimap)
+--LISTENERS--------------------------------------------------
+Events.Connect("SpawnMiniMap",SpawnMinimap)
 Events.Connect("newMapData",UpdateMapData)
 Events.Connect("DoorOpened",SpawnNewDoor)
+-------------------------------------------------------------
+
 Task.Wait(1)
-Events.BroadcastToServer("MinimapSpawned",localPlayer)
+--BROADCASTERS--------------------------------------------------
+--Events.BroadcastToServer("MinimapSpawned",localPlayer)
+----------------------------------------------------------------

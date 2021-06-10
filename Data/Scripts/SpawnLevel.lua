@@ -8,8 +8,9 @@ local propNewFolder = script:GetCustomProperty("NewFolder")
 local propTriggerRoom = script:GetCustomProperty("TriggerRoom")
 local propFloorFolder = script:GetCustomProperty("FloorFolder")
 local propTrigger = script:GetCustomProperty("Trigger")
+local propElevator = script:GetCustomProperty("Elevator")
 
-local i, roomCount
+local i, roomCount, room, finalRoom
 local player = World.FindObjectByName("player")
 
 local xyOffset = script.parent.parent:GetCustomProperty("xyOffset")
@@ -525,6 +526,35 @@ function SpawnConnector(i)
 			end
 		end
 	end
+	
+	--spawn First Room Elevator
+	if(i==1) then
+		newPosition = Vector3.New((room[i].spawnX+room[i].length/2)*xyOffset, (room[i].spawnZ+room[i].depth/2)*xyOffset, 0)
+		newScale = Vector3.New(1,1,1)
+		newRotation = Rotation.New(0,0,0)
+		asset = World.SpawnAsset(propElevator, {position = newPosition, scale = newScale, rotation = newRotation})
+		asset.name = "FirstRoom Elevator"
+		asset.parent = assetFolder
+	end
+	
+	--spawn Final Room Elevator
+	if(i==finalRoom) then
+		newPosition = Vector3.New((room[i].spawnX+room[i].length/2)*xyOffset, (room[i].spawnZ+room[i].depth/2)*xyOffset, 0)
+		newScale = Vector3.New(1,1,1)
+		if(room[i].parentDirection == "north") then
+			newRotation = Rotation.New(0,0,0)
+		elseif(room[i].parentDirection == "south") then
+			newRotation = Rotation.New(0,0,180)
+		elseif(room[i].parentDirection == "east") then
+			newRotation = Rotation.New(0,0,90)
+		elseif(room[i].parentDirection == "west") then
+			newRotation = Rotation.New(0,0,270)
+		end
+		asset = World.SpawnAsset(propElevator, {position = newPosition, scale = newScale, rotation = newRotation})
+		asset.name = "FinalRoom Elevator"
+		asset.parent = assetFolder
+	end
+	
 end
 
 
@@ -532,6 +562,8 @@ function PrintLinkedRooms()
 	print("*********************************")
 	print("*         LINKED ROOMS          *")
 	print("*********************************")
+	roomCount = script.parent.parent.serverUserData.roomCount
+	print(roomCount)
 	for i=1,roomCount do
 		local m =0
 		while (room[i].linkedRoom[m]~=0) do
@@ -631,52 +663,26 @@ function UpdateActiveRooms (other)
 end
 
 function SpawnLevel()
+	room = script.parent.parent.serverUserData.room
+	roomCount = script.parent.parent.serverUserData.roomCount
+	finalRoom = script.parent.parent.serverUserData.finalRoom
+	PrintLinkedRooms()
 	print()
 	print("*********************************")
 	print("*       SPAWNING "..roomCount.." rooms       *")
 	print("*********************************")
-	for i=1,2 do
+	for i=1,3 do
 		SpawnRoom(i)
 		Task.Wait()
 	end
 	SpawnConnector(2)
-	local newColor = Color.New(155,55,0)
-	UI.PrintToScreen("Starting in 3...",newColor)
-	Task.Wait(1)
-	UI.PrintToScreen("2...",newColor)
-	Task.Wait(1)
-	UI.PrintToScreen("1...",newColor)
-end
-
-function SpawnInitialPlatform()
-	newPosition = Vector3.New(200,200,700)
-	newScale = Vector3.New(4,4,.5)
-	newRotation = Rotation.New(0,0,0)
-	asset = World.SpawnAsset(propFloor01, {position = newPosition, scale = newScale, rotation = newRotation})
-	asset.name = "initialPlatform"
-	asset.parent = script.parent
+	SpawnConnector(3)
 end
 
 
-function initialize()
-	room = script.parent.parent.serverUserData.room
-	print(room)
-	print(script.parent.parent.serverUserData.room)
-	roomCount = script.parent.parent.serverUserData.roomCount
-	PrintLinkedRooms()
-	SpawnLevel()
-	World.FindObjectByName("initialPlatform"):Destroy()	
-	
-end
-
-
-
-
-SpawnInitialPlatform()
-
-
+Task.Wait(0.5)
 --BROADCAST LISTENERS----------------------------------
-Events.Connect("LevelGenerated", initialize)
+Events.Connect("SpawnLevel", SpawnLevel)
 Events.Connect("UpdateActiveRooms", UpdateActiveRooms)
 -------------------------------------------------------
 

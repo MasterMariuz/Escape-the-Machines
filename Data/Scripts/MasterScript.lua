@@ -5,13 +5,15 @@ rand = RandomStream.New(timeSeed)
 
 room = {}
 intersectCount = 0
+finalRoom = 0
+currentPlayer = nil
+levelGeneratorIsWorking = false
 
 local xyOffset = script.parent.parent:GetCustomProperty("xyOffset")
 
 --variables to tweak the floor creation
 mainRooms = script.parent.parent:GetCustomProperty("mainRooms")
 rateExtraRooms = script.parent.parent:GetCustomProperty("rateExtraRooms")
-extraRooms = math.floor(mainRooms*rateExtraRooms/100)
 minRoomLength = script.parent.parent:GetCustomProperty("minRoomLength")
 maxRoomLength = script.parent.parent:GetCustomProperty("maxRoomLength")
 minFinalRoomLength = script.parent.parent:GetCustomProperty("minFinalRoomLength")
@@ -45,37 +47,47 @@ function initializeRoom (i)
 end
 
 
-function GenerateLevel() -- Executes the calculations for the values of the new floor
-
-	local timer = 0
-	local m
-	--spawn initial Room
-	initializeRoom(1)
-	room[1].length = rand:GetInteger(4,12)
-	room[1].depth = rand:GetInteger(4,12)
-	room[1].spawnX = 0
-	room[1].spawnZ = 0
-	initiateTiles (1,room[1].length,room[1].depth)
-	roomCount = 1
-	
-	CreateRoom("mainRoute")
-
-	--create main route until all room blocks have been used up
-	for m=1, mainRooms do
-		CreateRoom("mainRoute")
+function GenerateLevel(localPlayer, levelNumber) -- Executes the calculations for the values of the new floor
+	if(levelGeneratorIsWorking == true) then 
+		print("ERROR")
+		return false 
+	else
+		levelGeneratorIsWorking = true
+		currentPlayer = localPlayer
+		
+		local timer = 0
+		local m
+		--spawn initial Room
+		initializeRoom(1)
+		room[1].length = 6
+		room[1].depth = 6
+		room[1].spawnX = 0
+		room[1].spawnZ = 0
+		initiateTiles (1,room[1].length,room[1].depth)
+		roomCount = 1
+		
+		CreateRoom("firstRoom")
+		
+		mainRooms = levelNumber+1
+		local extraRooms = math.floor(mainRooms*rateExtraRooms/100)
+		
+		--create main route until all room blocks have been used up
+		for m=1, mainRooms do
+			CreateRoom("mainRoute")
+		end
+		--create final room
+		CreateRoom("finalRoom")
+		--main route has been created. Now, we'll create alternate routes
+		for m=1, extraRooms do
+			CreateRoom("extraRoom")
+		end
+		script.parent.parent.serverUserData.room = room 
+		script.parent.parent.serverUserData.roomCount = roomCount
+		script.parent.parent.serverUserData.finalRoom = finalRoom
+		print("roomCount "..script.parent.parent.serverUserData.roomCount)
+		levelGeneratorIsWorking = false
 	end
-	
-	print(i)
-	--create final room
-	CreateRoom("finalRoom")
-	
-	--main route has been created. Now, we'll create alternate routes
-	for m=1, extraRooms do
-		CreateRoom("extraRoom")
-	end
-	script.parent.parent.serverUserData.room = room 
-	script.parent.parent.serverUserData.roomCount = roomCount
-	
+	return true
 end
 
 
@@ -112,6 +124,10 @@ function CreateRoom(type)
 			if(type=="finalRoom") then
 				newLength = rand:GetInteger(minFinalRoomLength,maxFinalRoomLength)
 				newDepth = rand:GetInteger(minFinalRoomLength,maxFinalRoomLength)
+				finalRoom = i
+			elseif(type=="firstRoom") then
+				newLength = rand:GetInteger(8,12)
+				newDepth = 4
 			else
 				newLength = rand:GetInteger(minRoomLength,maxRoomLength)
 				newDepth = rand:GetInteger(minRoomLength,maxRoomLength)
@@ -120,26 +136,42 @@ function CreateRoom(type)
 		initiateTiles (i,newLength,newDepth)
 		
 		-- randomDirection: 1 = north, 2 = south, 3 = east, 4 = west
-		randomDirection = rand:GetInteger(1,4) -- will find a direction to spawn a new room relative to the first room i
-		counter = counter + 1
+		
+		if(type == "firstRoom") then
+			randomDirection = 1
+		else
+			randomDirection = rand:GetInteger(1,4) -- will find a direction to spawn a new room relative to the first room i
+			counter = counter + 1
+		end
 		
 		repeat
-			if(type=="mainRoute" or type=="finalRoom") then
-				k = i - 1 - math.floor(counter / 4) -- will check x loops before moving to a previous room (default:20)
-				if(i>=3 and k==1) then
+			if(type=="mainRoute" or type=="finalRoom" or type=="firstRoom") then
+				k = i-1 -math.floor(counter / 4) -- will check x loops before moving to a previous room (default:20)
+				if(k<=2) then
+					k=i-1
 					counter=0
-					k=2
+				end				
+				if(i>=4 and k==2) then
+					counter=0
+					k=3
 				end
 			elseif(type=="extraRoom") then
-				k = rand:GetInteger(2,roomCount)
+				repeat 
+					k = rand:GetInteger(2,roomCount)
+				until (k< finalRoom or k> finalRoom)
 			end
 		until(room[k].linkedRoomCount<=3) --max linked rooms is 5
 
 		if(randomDirection == 1) then -- spawn on direction [1,0]
-			spawnX = room[k].spawnX + room[k].length +1
-			minZ = room[k].spawnZ - newDepth +1
-			maxZ = room[k].spawnZ + room[k].depth -2
-			spawnZ = rand:GetInteger(minZ,maxZ)
+			if(type == "firstRoom") then
+				spawnX = room[k].spawnX + room[k].length +1
+				spawnZ = room[k].spawnZ+1
+			else
+				spawnX = room[k].spawnX + room[k].length +1
+				minZ = room[k].spawnZ - newDepth +1
+				maxZ = room[k].spawnZ + room[k].depth -2
+				spawnZ = rand:GetInteger(minZ,maxZ)
+			end
 			roomPositionValidation = CheckRoomIntersect(i,spawnX,spawnZ,newLength,newDepth)
 			if(roomPositionValidation == true) then
 				for o=0,newDepth-1 do
@@ -319,33 +351,17 @@ function PlayerCurrentRoom (other)
 end
 
 
-function SpawnInitialMinimapRoom (localPlayer)
-	print("OK")
-	Events.BroadcastToPlayer(localPlayer,"newMapData",1,room[1].spawnX,room[1].spawnZ,room[1].length,room[1].depth)
-end
-
-function OnPlayerJoined (player)
-	
-end
-
-GenerateLevel()
-
-
 --script.parent.parent:SetNetworkedCustomProperty("roomCount",roomCount) --the property must have Property Networking enabled in order to be able to modify it
---script.parent.parent:SetNetworkedCustomProperty("LevelGenerated",true)
-
 --local player = Game.FindNearestPlayer(Vector3.New(0,0,0))
 
 
 --LISTENERS--------------------------------------------------
-Events.ConnectForPlayer("MinimapSpawned",SpawnInitialMinimapRoom)
+Events.Connect("GenerateLevel",GenerateLevel)
 -------------------------------------------------------------
 
 
 --BROADCASTERS----------------------------------------
 --Task.Wait() --send broadcast 1 frame after all Listeners have been established
-Events.Broadcast("LevelGenerated")
-Events.BroadcastToAllPlayers("LevelGenerated")
 ------------------------------------------------------
 
 

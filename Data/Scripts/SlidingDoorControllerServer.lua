@@ -107,12 +107,6 @@ function OnBeginOverlap(trigger, other)
 		--if GetDoorOffset() == 0.0 then								-- Can't auto open if the door isn't closed
 			OpenDoor(other)
 			autoCloseTime = time() + TIME_OPEN
-			local rootAsset = script.parent.parent.parent.parent
-			local i = tonumber(rootAsset.name)
-			local position = rootAsset:GetWorldPosition()
-			local doorType = rootAsset:GetCustomProperty("doorType")
-			Events.BroadcastToPlayer(other,"DoorOpened",i,position.x,position.y,doorType)
-		--end
 	end
 end
 

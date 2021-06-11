@@ -16,7 +16,7 @@ Objects {
   }
   ParentId: 8641810105033289747
   ChildIds: 4881677574496800761
-  ChildIds: 8471692016161821856
+  ChildIds: 11326213429737937855
   Collidable_v2 {
     Value: "mc:ecollisionsetting:inheritfromparent"
   }
@@ -34,13 +34,9 @@ Objects {
   }
 }
 Objects {
-  Id: 8471692016161821856
-  Name: "UI Container"
+  Id: 11326213429737937855
+  Name: "Door4x1"
   Transform {
-    Location {
-    }
-    Rotation {
-    }
     Scale {
       X: 1
       Y: 1
@@ -48,41 +44,43 @@ Objects {
     }
   }
   ParentId: 8645365627582347205
+  WantsNetworking: true
   Collidable_v2 {
     Value: "mc:ecollisionsetting:inheritfromparent"
   }
   Visible_v2 {
     Value: "mc:evisibilitysetting:inheritfromparent"
   }
-  CameraCollidable {
-    Value: "mc:ecollisionsetting:inheritfromparent"
-  }
-  EditorIndicatorVisibility {
-    Value: "mc:eindicatorvisibility:visiblewhenselected"
-  }
-  Control {
-    RenderTransformPivot {
-      Anchor {
-        Value: "mc:euianchor:middlecenter"
-      }
-    }
-    Canvas {
-      ContentType {
-        Value: "mc:ecanvascontenttype:dynamic"
-      }
-      Opacity: 1
-    }
-    AnchorLayout {
-      SelfAnchor {
-        Anchor {
-          Value: "mc:euianchor:topleft"
+  TemplateInstance {
+    ParameterOverrideMap {
+      key: 1801603594141922759
+      value {
+        Overrides {
+          Name: "Name"
+          String: "Door4x1"
+        }
+        Overrides {
+          Name: "Scale"
+          Vector {
+            X: 1
+            Y: 1
+            Z: 1
+          }
+        }
+        Overrides {
+          Name: "Position"
+          Vector {
+          }
+        }
+        Overrides {
+          Name: "Rotation"
+          Rotator {
+          }
         }
       }
-      TargetAnchor {
-        Anchor {
-          Value: "mc:euianchor:topleft"
-        }
-      }
+    }
+    TemplateAsset {
+      Id: 1687323197551734109
     }
   }
 }
@@ -145,12 +143,6 @@ Objects {
       }
     }
     Overrides {
-      Name: "cs:FloorFolder"
-      AssetReference {
-        Id: 16962570200718933532
-      }
-    }
-    Overrides {
       Name: "cs:Trigger"
       AssetReference {
         Id: 12158176512114773155
@@ -160,6 +152,18 @@ Objects {
       Name: "cs:Elevator"
       AssetReference {
         Id: 6249083709055145304
+      }
+    }
+    Overrides {
+      Name: "cs:ElevatorStasisField"
+      AssetReference {
+        Id: 6416281040492978268
+      }
+    }
+    Overrides {
+      Name: "cs:NewGroup"
+      AssetReference {
+        Id: 7757243214136105654
       }
     }
   }

@@ -3,11 +3,14 @@ assetFolder = World.FindObjectByName("SpawnLevel")
 elevator = assetFolder:GetCustomProperty("Elevator")
 local propFloor01 = assetFolder:GetCustomProperty("Floor01")
 local propHeadLight = script:GetCustomProperty("HeadLight")
-local propElevatorStasisField = script:GetCustomProperty("ElevatorStasisField")
 
 local spawnWorldFloor,firstRoomElevator
 local headlight, stasisFieldAsset,stasisFieldColor
 local r = 0
+
+local playersGameData = {}
+
+
 
 function OnKeyPressed(player, KeyPressed)
 	if(KeyPressed == "ability_extra_33") then
@@ -42,15 +45,7 @@ function SpawnInitialPlatform()
 	newScale = Vector3.New(1,1,1)
 	newRotation = Rotation.New(0,0,0)
 	firstRoomElevator = World.SpawnAsset(elevator, {parent = assetFolder, position = newPosition, scale = newScale, rotation = newRotation})
-	firstRoomElevator.name = "FirstRoom Elevator"
-	
-	--spawn Initial Stasis Field
-	newPosition = Vector3.New(250,0,1300)
-	newScale = Vector3.New(3,3,6)
-	newRotation = Rotation.New(0,0,0)
-	stasisFieldAsset = World.SpawnAsset(propElevatorStasisField, {parent = assetFolder, position = newPosition, scale = newScale, rotation = newRotation})
-	stasisFieldAsset.name = "FirstRoom StasisField"
-	
+	firstRoomElevator.name = "FirstRoom Elevator"	
 end
 
 function DestroyInitialPlatform()
@@ -60,27 +55,28 @@ function DestroyInitialPlatform()
 	if(Object.IsValid(firstRoomElevator)) then
 		firstRoomElevator:Destroy()
 	end
-	if(Object.IsValid(stasisFieldAsset)) then
-		stasisFieldAsset:Destroy()
-	end
-	
 end
 
 --FIRES WHENEVER A NEW PLAYER JOINS
 function OnPlayerJoined(player)
-	local playerData = Storage.GetPlayerData(player)
-	if(playerData.level == nil) then
-		Storage.SetPlayerData(player,{level = 5})
-		playerData = Storage.GetPlayerData(player)
+	local id = player.id
+	table.insert(playersGameData,id)
+	--import data of the player from the Global Server Storage into the game
+	playersGameData[id] = {gameStorage = Storage.GetPlayerData(player), playerAsset = player} 
+	
+	if(playersGameData[id].gameStorage.maxLevel == nil) then
+		playersGameData[id].gameStorage.maxLevel = 1
+		Storage.SetPlayerData(player,playersGameData[id].gameStorage)
 	end
-	playerData.level = 5
-	print(playerData.level)
-	Events.BroadcastToPlayer(player,"ToggleMainMenu",playerData.level)
-	Events.BroadcastToPlayer(player,"UpdateLevel",playerData.level)
+	-----
+	--playersGameData[id].gameStorage.level = 1
+	--Storage.SetPlayerData(player,playersGameData[id].gameStorage)
+	-----
+	Events.BroadcastToPlayer(player,"ToggleMainMenu",playersGameData[id].gameStorage.maxLevel)
+	Events.BroadcastToPlayer(player,"UpdateLevel",playersGameData[id].gameStorage.maxLevel)
 	SpawnInitialPlatform()
 	player.bindingPressedEvent:Connect(OnKeyPressed)
 	local playerSpawnLocation = script:GetCustomProperty("SpawnLocation")
-	print(playerSpawnLocation)
 	player:SetWorldPosition(playerSpawnLocation) 
 end
 
@@ -100,13 +96,14 @@ end
 
 
 function initializeGameLevel (player, levelToSpawn)
+	local id = player.id
+	playersGameData[id].gameStorage.levelSpawned = levelToSpawn
+	
 	Events.Broadcast("GenerateLevel",player,levelToSpawn)
 	Task.Wait(1)
-	Events.Broadcast("SpawnLevel")
+	Events.Broadcast("SpawnLevel",levelToSpawn)
 	Task.Wait(0.1)
 	Events.BroadcastToPlayer(player, "ToggleMainMenu", levelToSpawn)
-	Task.Wait(0.1)
-	
 	Task.Wait(0.5)
 	player:SetWorldPosition(Vector3.New(850,600,500)) 
 	DestroyInitialPlatform()
@@ -122,6 +119,36 @@ function initializeGameLevel (player, levelToSpawn)
 	Task.Wait(3)
 	UI.PrintToScreen("Press F to turn On/Off...", Color.YELLOW)
 end
+
+
+--activates when a player reaches the finalRoom elevator and advances to the next level
+function initializeNextLevel (player, levelToSpawn)
+	World.FindObjectByName("Floor "..levelToSpawn-1):Destroy() --looks for the Floor Folder and destroyes all the previous Floor Assets
+	Events.Broadcast("GenerateLevel",player,levelToSpawn)
+	Task.Wait(1)
+	Events.Broadcast("SpawnLevel",levelToSpawn)
+	Task.Wait(0.5)
+	player:SetWorldPosition(Vector3.New(850,600,500)) 
+	Events.BroadcastToPlayer(player,"initializeMapData")
+end
+
+
+function ToggleElevatorStasisField(newStasisFieldAsset)
+	stasisFieldAsset = newStasisFieldAsset
+end
+
+function OnFinalRoomElevatorReached(player)
+	local id = player.id
+	--updates the new level reached for the player
+	playersGameData[id].gameStorage.levelSpawned = playersGameData[id].gameStorage.levelSpawned +1
+	if(playersGameData[id].gameStorage.levelSpawned > playersGameData[id].gameStorage.maxLevel) then
+		playersGameData[id].gameStorage.maxLevel = playersGameData[id].gameStorage.levelSpawned
+		Storage.SetPlayerData(player,playersGameData[id].gameStorage)
+	end
+	--spawn next level
+	initializeNextLevel(player, playersGameData[id].gameStorage.levelSpawned) 
+end
+
 
 
 function Tick()
@@ -147,6 +174,8 @@ end
 Game.playerJoinedEvent:Connect(OnPlayerJoined)
 Events.ConnectForPlayer("MainMenuGoButtonPressed",initializeGameLevel)
 Events.ConnectForPlayer("TogglePlayerMovement",TogglePlayerMovement)
+Events.Connect("ToggleElevatorStasisField",ToggleElevatorStasisField)
+Events.Connect("FinalRoomElevatorReached",OnFinalRoomElevatorReached)
 -------------------------------------------------------------
 
 

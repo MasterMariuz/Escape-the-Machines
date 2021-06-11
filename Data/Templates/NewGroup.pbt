@@ -7,7 +7,7 @@ Assets {
       RootId: 2212415098728246391
       Objects {
         Id: 2212415098728246391
-        Name: "Group"
+        Name: "NewGroup"
         Transform {
           Scale {
             X: 1
@@ -15,7 +15,8 @@ Assets {
             Z: 1
           }
         }
-        ParentId: 15891078139384035645
+        ParentId: 8645365627582347205
+        WantsNetworking: true
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }

@@ -32,10 +32,8 @@ end
 -- will add or remove levels whenever player clicks the up or down arrows int he Main Menu, Level section
 function ChangeLevel(numberOflevels) 
 	currentLevel = currentLevel + numberOflevels
-	print(currentLevel)
 	MainMenuPanel:FindChildByName("CurrentLevelNumber"):FindChildByName("Text").text = tostring(currentLevel)
 	Events.Broadcast("UpdateLevel",currentLevel)
-	print("level changed")
 end
 
 

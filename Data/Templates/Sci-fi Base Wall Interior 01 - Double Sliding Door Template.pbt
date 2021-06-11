@@ -15,7 +15,8 @@ Assets {
             Z: 1
           }
         }
-        ParentId: 4781671109827199097
+        ParentId: 8645365627582347205
+        ChildIds: 9823591528195740497
         ChildIds: 5012526056725407075
         ChildIds: 14960299550677318543
         Collidable_v2 {
@@ -29,6 +30,39 @@ Assets {
         }
         Folder {
           IsGroup: true
+        }
+      }
+      Objects {
+        Id: 9823591528195740497
+        Name: "MinimapFeedDoor"
+        Transform {
+          Location {
+          }
+          Rotation {
+          }
+          Scale {
+            X: 1
+            Y: 1
+            Z: 1
+          }
+        }
+        ParentId: 14633673777962383534
+        Collidable_v2 {
+          Value: "mc:ecollisionsetting:inheritfromparent"
+        }
+        Visible_v2 {
+          Value: "mc:evisibilitysetting:inheritfromparent"
+        }
+        CameraCollidable {
+          Value: "mc:ecollisionsetting:inheritfromparent"
+        }
+        EditorIndicatorVisibility {
+          Value: "mc:eindicatorvisibility:visiblewhenselected"
+        }
+        Script {
+          ScriptAsset {
+            Id: 5562664933915682018
+          }
         }
       }
       Objects {
@@ -693,7 +727,7 @@ Assets {
           }
         }
         ParentId: 11142224291378216344
-        ChildIds: 4710149706088062336
+        ChildIds: 6734049558672750106
         UnregisteredParameters {
         }
         Collidable_v2 {
@@ -710,12 +744,15 @@ Assets {
         }
       }
       Objects {
-        Id: 4710149706088062336
+        Id: 6734049558672750106
         Name: "SlidingDoorControllerServer"
         Transform {
           Location {
+            X: -0.000396728516
+            Y: 359.999969
           }
           Rotation {
+            Yaw: -179.999924
           }
           Scale {
             X: 1
@@ -728,13 +765,13 @@ Assets {
           Overrides {
             Name: "cs:ComponentRoot"
             ObjectReference {
-              SubObjectId: 11142224291378216344
+              SubObjectId: 9255496091932108853
             }
           }
           Overrides {
             Name: "cs:DoorRoot"
             ObjectReference {
-              SubObjectId: 4042778444811599660
+              SubObjectId: 1033066286528063449
             }
           }
           Overrides {

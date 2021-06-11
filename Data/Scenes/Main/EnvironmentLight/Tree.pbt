@@ -1,6 +1,39 @@
 Name: "EnvironmentLight"
 RootId: 12798253316288337425
 Objects {
+  Id: 12528680548613509959
+  Name: "EnvironmentLightController"
+  Transform {
+    Location {
+    }
+    Rotation {
+    }
+    Scale {
+      X: 1
+      Y: 1
+      Z: 1
+    }
+  }
+  ParentId: 12798253316288337425
+  Collidable_v2 {
+    Value: "mc:ecollisionsetting:inheritfromparent"
+  }
+  Visible_v2 {
+    Value: "mc:evisibilitysetting:inheritfromparent"
+  }
+  CameraCollidable {
+    Value: "mc:ecollisionsetting:inheritfromparent"
+  }
+  EditorIndicatorVisibility {
+    Value: "mc:eindicatorvisibility:visiblewhenselected"
+  }
+  Script {
+    ScriptAsset {
+      Id: 15449482864190414252
+    }
+  }
+}
+Objects {
   Id: 4807121007309138193
   Name: "Light100"
   Transform {
@@ -248,39 +281,6 @@ Objects {
       Id: 8497683954571070335
     }
     TeamSettings {
-    }
-  }
-}
-Objects {
-  Id: 5059726412754854170
-  Name: "EnvironmentLightController"
-  Transform {
-    Location {
-    }
-    Rotation {
-    }
-    Scale {
-      X: 1
-      Y: 1
-      Z: 1
-    }
-  }
-  ParentId: 12798253316288337425
-  Collidable_v2 {
-    Value: "mc:ecollisionsetting:inheritfromparent"
-  }
-  Visible_v2 {
-    Value: "mc:evisibilitysetting:inheritfromparent"
-  }
-  CameraCollidable {
-    Value: "mc:ecollisionsetting:inheritfromparent"
-  }
-  EditorIndicatorVisibility {
-    Value: "mc:eindicatorvisibility:visiblewhenselected"
-  }
-  Script {
-    ScriptAsset {
-      Id: 15449482864190414252
     }
   }
 }

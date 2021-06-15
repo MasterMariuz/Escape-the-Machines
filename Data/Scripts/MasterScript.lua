@@ -53,14 +53,14 @@ end
 
 
 function GenerateLevel(localPlayer, levelNumber) -- Executes the calculations for the values of the new floor
+	Events.Broadcast("LevelGeneratorHasStarted")
 	if(levelGeneratorIsWorking == true) then 
 		print("ERROR")
 		return "Level Generator Is Busy..."
 	else
 		levelGeneratorIsWorking = true
 	end
-	f = levelNumber
-	if(floor[f] == not nil) then 
+	if(floor[levelNumber] == not nil) then 
 		return "FLOOR LEVEL EXISTS ON CURRENT SERVER"
 	else 
 		initializeVariables(levelNumber)
@@ -81,19 +81,37 @@ function GenerateLevel(localPlayer, levelNumber) -- Executes the calculations fo
 	
 	mainRooms = levelNumber+1
 	local extraRooms = math.floor(mainRooms*rateExtraRooms/100)
+	local progress = 1/(mainRooms+extraRooms+2)
+	Events.BroadcastToPlayer(player,"UpdateLoadingBar",progress)
 	
 	--create main route until all room blocks have been used up
+	local c = 0
 	for m=1, mainRooms do
 		CreateRoom("mainRoute")
+		--send broadcast every 10 rooms to update Client Loading Bar (Events are limited to 10 times per second)
+		c=c+1
+		if(c>=10)then
+			progress = floor[f].roomCount/(mainRooms+extraRooms+2)
+			Events.BroadcastToPlayer(localPlayer,"UpdateLoadingBar",progress)
+			c=0
+		end
 	end
 	--create final room
 	CreateRoom("finalRoom")
 	--main route has been created. Now, we'll create alternate routes
+	c=0
 	for m=1, extraRooms do
 		CreateRoom("extraRoom")
+		c=c+1
+		if(c>=10)then
+			progress = floor[f].roomCount/(mainRooms+extraRooms+2)
+			Events.BroadcastToPlayer(localPlayer,"UpdateLoadingBar",progress)
+			c=0
+		end
 	end
 	script.parent.parent.serverUserData.floor = floor --VERY IMPORTANT. PRINTS THE FLOOR DATA FOR OTHER SCRIPTS TO ACCESS AND USE 
 	levelGeneratorIsWorking = false
+	Events.Broadcast("LevelGeneratedSuccess")
 	return "NEW FLOOR GENERATED, SUCCESS!"
 end
 
@@ -120,7 +138,7 @@ function CreateRoom(type)
 		--wait 1 frame every 3 loops instead of 1 to generate level 3x faster
 		countWait = countWait+1
 		refDirection = {}
-		if(countWait==5) then
+		if(countWait==4) then
 			Task.Wait()
 			countWait=0
 		end

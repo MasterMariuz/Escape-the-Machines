@@ -4,11 +4,12 @@ elevator = assetFolder:GetCustomProperty("Elevator")
 local propFloor01 = assetFolder:GetCustomProperty("Floor01")
 local propHeadLight = script:GetCustomProperty("HeadLight")
 
-local spawnWorldFloor,firstRoomElevator
-local headlight, stasisFieldAsset,stasisFieldColor
+local spawnWorldFloor,firstRoomElevator, headlight, stasisFieldAsset,stasisFieldColor
 local r = 0
 
 local playersGameData = {}
+local levelGenerated = false
+local levelGeneratorIsBusy = false
 
 
 
@@ -69,11 +70,11 @@ function OnPlayerJoined(player)
 		Storage.SetPlayerData(player,playersGameData[id].gameStorage)
 	end
 	-----
-	--playersGameData[id].gameStorage.level = 1
-	--Storage.SetPlayerData(player,playersGameData[id].gameStorage)
+	playersGameData[id].gameStorage.maxLevel = 1
+	Storage.SetPlayerData(player,playersGameData[id].gameStorage)
 	-----
-	Events.BroadcastToPlayer(player,"ToggleMainMenu",playersGameData[id].gameStorage.maxLevel)
-	Events.BroadcastToPlayer(player,"UpdateLevel",playersGameData[id].gameStorage.maxLevel)
+	Events.BroadcastToPlayer(player,"ToggleMainMenu",playersGameData[id].gameStorage.maxLevel) --connects with UI Main Menu script
+	Events.BroadcastToPlayer(player,"UpdateLevel",playersGameData[id].gameStorage.maxLevel) 
 	SpawnInitialPlatform()
 	player.bindingPressedEvent:Connect(OnKeyPressed)
 	local playerSpawnLocation = script:GetCustomProperty("SpawnLocation")
@@ -97,20 +98,40 @@ end
 
 function initializeGameLevel (player, levelToSpawn)
 	local id = player.id
-	playersGameData[id].gameStorage.levelSpawned = levelToSpawn
+	playersGameData[id].gameStorage.currentLevel = levelToSpawn
 	
 	Events.Broadcast("GenerateLevel",player,levelToSpawn)
-	Task.Wait(1)
+	local waitTime = 0
+	repeat
+		Task.Wait(1)
+		waitTime = waitTime +1
+		if(waitTime == 2) then
+			Events.BroadcastToPlayer(player, "ShowLoadingBar")
+		end
+	until(levelGenerated == true) -- wait until the level has been generated completely
+	levelGenerated = false
+	levelGeneratorIsBusy = false
+	
 	Events.Broadcast("SpawnLevel",levelToSpawn)
 	Task.Wait(0.1)
 	Events.BroadcastToPlayer(player, "ToggleMainMenu", levelToSpawn)
 	Task.Wait(0.5)
 	player:SetWorldPosition(Vector3.New(850,600,500)) 
 	DestroyInitialPlatform()
+	
+	--display current level banner
+	Events.BroadcastToPlayer(player,"UIShowLevel",levelToSpawn)
+	
+	--reset and activate level Timer
+	print("START LEVEL TIMER BROADCASTED")
+	Events.BroadcastToPlayer(player,"StartLevelTimer")
+	
+	--delay initial minimap spawning animation
 	UI.PrintToScreen("Room Scanner Initializing...", Color.YELLOW)
 	Task.Wait(3)
 	Events.BroadcastToPlayer(player, "SpawnMiniMap")
 	UI.PrintToScreen("Room Scanner Online...", Color.YELLOW)
+	--delay Headlight spawning animation
 	Task.Wait(0.3)
 	UI.PrintToScreen("Headlight Powering Up...", Color.YELLOW)
 	Task.Wait(3)
@@ -121,34 +142,199 @@ function initializeGameLevel (player, levelToSpawn)
 end
 
 
---activates when a player reaches the finalRoom elevator and advances to the next level
-function initializeNextLevel (player, levelToSpawn)
-	World.FindObjectByName("Floor "..levelToSpawn-1):Destroy() --looks for the Floor Folder and destroyes all the previous Floor Assets
-	Events.Broadcast("GenerateLevel",player,levelToSpawn)
-	Task.Wait(1)
-	Events.Broadcast("SpawnLevel",levelToSpawn)
+function OnFinalRoomElevatorReached(player)
+	local id = player.id
+	--register level data timer
+	Events.BroadcastToPlayer(player,"FinalRoomElevatorReached") --connects with UI Manager (client)
+	Task.Wait() --wait for data to be received from the player's client
+	
+	--updates the new level reached for the player
+	newLevel = playersGameData[id].gameStorage.currentLevel +1
+	playersGameData[id].gameStorage.currentLevel = newLevel
+
+	if(newLevel > playersGameData[id].gameStorage.maxLevel) then
+		playersGameData[id].gameStorage.maxLevel = newLevel
+		Storage.SetPlayerData(player,playersGameData[id].gameStorage)
+	end
+
+	Events.Broadcast("GenerateLevel",player,newLevel)
+	repeat
+		Task.Wait(1)
+	until(levelGenerated == true) -- wait until the level has been generated completely
+	levelGenerated = false
+	levelGeneratorIsBusy = false
+	
+	Events.Broadcast("SpawnLevel",newLevel)
 	Task.Wait(0.5)
-	player:SetWorldPosition(Vector3.New(850,600,500)) 
+	World.FindObjectByName("Floor "..newLevel-1):Destroy()
+	player:SetWorldPosition(Vector3.New(850,600,100)) 
+	Task.Wait(0.1)
 	Events.BroadcastToPlayer(player,"initializeMapData")
+	Events.BroadcastToPlayer(player,"UIShowLevel",newLevel)
+	
+	--reset and activate level Timer
+	Events.BroadcastToPlayer(player,"StartLevelTimer")
+	
 end
+
+
 
 
 function ToggleElevatorStasisField(newStasisFieldAsset)
 	stasisFieldAsset = newStasisFieldAsset
 end
 
-function OnFinalRoomElevatorReached(player)
-	local id = player.id
-	--updates the new level reached for the player
-	playersGameData[id].gameStorage.levelSpawned = playersGameData[id].gameStorage.levelSpawned +1
-	if(playersGameData[id].gameStorage.levelSpawned > playersGameData[id].gameStorage.maxLevel) then
-		playersGameData[id].gameStorage.maxLevel = playersGameData[id].gameStorage.levelSpawned
-		Storage.SetPlayerData(player,playersGameData[id].gameStorage)
-	end
-	--spawn next level
-	initializeNextLevel(player, playersGameData[id].gameStorage.levelSpawned) 
+function UpdateActiveRooms (other, f, i)
+	print("SPAWNING NEW ROOMS AND DESTROYING OLD ROOMS")
+	--local newTask = Task.Spawn(function()
+		local floor = script.parent.parent.serverUserData.floor
+		local m, n, l, s
+		local roomToDestroy, connectorToDestroy
+		for m=1,floor[f].roomCount do
+			if(floor[f].room[m].active == true) then
+				floor[f].room[m].active = false
+			end
+			if(floor[f].room[m].activeConnector == true) then
+				floor[f].room[m].activeConnector = false
+			end
+		end
+		print("f:"..f.." i:"..i)
+		floor[f].room[i].active = true
+		print("entered Room: "..i)
+		m=0
+		print(floor[f].room[i].linkedRoom)
+		while (floor[f].room[i].linkedRoom[m]~=0) do
+			l = floor[f].room[i].linkedRoom[m]
+			if(floor[f].room[l].active == false) then
+				floor[f].room[l].active = true
+			else
+				Events.Broadcast("SpawnRoom", l) --connects with SpawnLevel script
+			end
+			m=m+1
+		end
+		
+		m=0
+		while (floor[f].room[i].linkedRoom[m]~=0) do
+			l = floor[f].room[i].linkedRoom[m]
+			if(floor[f].room[l].activeConnector == false) then
+				floor[f].room[l].activeConnector = true
+			else
+				if( Object.IsValid(World.FindObjectByName("Connector "..l)) == false ) then 
+					Events.Broadcast("SpawnConnector",l) --connects with SpawnLevel script
+					print("Spawned Connector: "..l)
+				end
+			end
+			
+			n=0
+			while (floor[f].room[l].linkedRoom[n]~=0) do
+				s = floor[f].room[l].linkedRoom[n]
+				if(floor[f].room[s].activeConnector == false) then
+					floor[f].room[s].activeConnector = true
+				else
+					if( Object.IsValid(World.FindObjectByName("Connector "..s)) == false ) then 
+						Events.Broadcast("SpawnConnector",s) --connects with SpawnLevel script
+						print("Spawned Connector: "..s)
+					end
+				end
+				n=n+1
+			end
+			m=m+1
+		end
+		
+		--destroy all inactive rooms
+		for i=1,floor[f].roomCount do
+			if(floor[f].room[i].active == false) then
+				floor[f].room[i].active = nil
+				roomToDestroy = World.FindObjectByName("Room "..i)
+				roomToDestroy:Destroy()
+				Task.Wait()
+			end
+		end
+		
+		--destroy all inactive connectors
+		for i=1,floor[f].roomCount do
+			if(floor[f].room[i].activeConnector == false) then
+				floor[f].room[i].activeConnector = nil
+				connectorToDestroy = World.FindObjectByName("Connector "..i)
+				connectorToDestroy:Destroy()
+				Task.Wait()
+			end
+		end
+	--end)
 end
 
+
+
+function OnRoomTriggerPressed(player, i)
+	local f = playersGameData[player.id].gameStorage.currentLevel
+	UpdateActiveRooms(player,f,i)
+	local floor = script.parent.parent.serverUserData.floor
+	Events.BroadcastToPlayer(player, "newMapData", i,floor[f].room[i].spawnX,floor[f].room[i].spawnZ,floor[f].room[i].length,floor[f].room[i].depth)
+end
+
+--IS THIS FUNCTION NEEDED????
+function PlayerCurrentRoom (other)
+	local i = 1
+	local player = other
+	local playerPosition = player:GetWorldPosition()
+
+	while i<=floor[f].roomCount do
+		if(playerPosition.x > floor[f].room[i].spawnX*xyOffset and playerPosition.x < (floor[f].room[i].spawnX+floor[f].room[i].length)*xyOffset) then
+			if(playerPosition.y > floor[f].room[i].spawnZ*xyOffset and playerPosition.y < (floor[f].room[i].spawnZ+floor[f].room[i].depth)*xyOffset) then
+				return i
+			end
+		end
+		i=i+1
+	end
+	return nil
+end
+
+function MainMenuKeyPressed(player)
+	local id = player.id
+	local currentLevel = playersGameData[id].gameStorage.currentLevel
+	Events.BroadcastToPlayer(player,"ToggleMainMenu",currentLevel)
+end
+
+
+function LevelGeneratedSuccess()
+	levelGenerated = true
+end
+
+function LevelGeneratorHasStarted()
+	levelGeneratorIsBusy = true
+end
+
+function SaveNewTimeLevelComplete(player, levelTimer)
+	local id = player.id
+	if(playersGameData[id].gameStorage.levelTimeRecord == nil) then
+		playersGameData[id].gameStorage.levelTimeRecord = {}
+		warn("level time record registry does not exist. Creating {}")
+	end
+	local currentLevel = playersGameData[id].gameStorage.currentLevel
+	
+	if(not(playersGameData[id].gameStorage.levelTimeRecord[currentLevel] == nil) and playersGameData[id].gameStorage.levelTimeRecord[currentLevel]<0) then
+		playersGameData[id].gameStorage.levelTimeRecord[currentLevel] = 9999
+		Storage.SetPlayerData(player,playersGameData[id].gameStorage)
+		warn("STORAGE LEVEL TIMER DATA IS LESS THAN 0. RESETTING TO 9999")
+	end
+	
+	if(playersGameData[id].gameStorage.levelTimeRecord[currentLevel] == nil) then
+		playersGameData[id].gameStorage.levelTimeRecord[currentLevel] = levelTimer --in seconds
+		Storage.SetPlayerData(player,playersGameData[id].gameStorage)
+		Events.BroadcastToPlayer(player,"NewTimeEntry",currentLevel) --first time level completed
+		warn("FIRST TIME COMPLETED! SAVING NEW DATA TO SERVER STORAGE")
+	else
+		if(levelTimer < playersGameData[id].gameStorage.levelTimeRecord[currentLevel]) then --new Record!
+			playersGameData[id].gameStorage.levelTimeRecord[currentLevel] = levelTimer --in seconds
+			Storage.SetPlayerData(player,playersGameData[id].gameStorage)
+			Events.BroadcastToPlayer(player,"NewTimeRecord",currentLevel)
+		else
+			local timeRecord = playersGameData[id].gameStorage.levelTimeRecord[currentLevel]
+			Events.BroadcastToPlayer(player,"ShowTimeRecord",currentLevel,timeRecord) --show Personal Best in UI
+		end
+	end
+	warn("New Level Record registered: "..currentLevel.." time(sec): "..levelTimer)
+end
 
 
 function Tick()
@@ -170,13 +356,21 @@ end
 
 
 
+
+
 --EVENT LISTENERS--------------------------------------------
 Game.playerJoinedEvent:Connect(OnPlayerJoined)
 Events.ConnectForPlayer("MainMenuGoButtonPressed",initializeGameLevel)
 Events.ConnectForPlayer("TogglePlayerMovement",TogglePlayerMovement)
 Events.Connect("ToggleElevatorStasisField",ToggleElevatorStasisField)
 Events.Connect("FinalRoomElevatorReached",OnFinalRoomElevatorReached)
+Events.Connect("RoomTriggerPressed",OnRoomTriggerPressed) --from each room's trigger, activates when player touches a new room's floor
+Events.Connect("LevelGeneratedSuccess",LevelGeneratedSuccess) -- connects with MasterScript. checks if the level generated successfully
+Events.Connect("LevelGeneratorHasStarted",LevelGeneratorHasStarted) -- connects with MasterScript. checks if the Level Generator has fired and is currently working
+Events.ConnectForPlayer("SaveNewTimeLevelComplete",SaveNewTimeLevelComplete) --connects with UIManager to get the level finished elapsed time to complete
 -------------------------------------------------------------
+
+Events.ConnectForPlayer("MainMenuKeyPressed",MainMenuKeyPressed)
 
 
 --EVENT BROADCASTERS-----------------------------------------

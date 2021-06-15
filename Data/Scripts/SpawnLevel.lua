@@ -13,7 +13,7 @@ local propNewGroup = script:GetCustomProperty("NewGroup")
 
 local xyOffset = script.parent.parent:GetCustomProperty("xyOffset")
 
-local i, floor, childAsset, asset, floorFolder, connectorFolder, roomFolder, f
+local i, floor, childAsset, asset, connectorFolder, roomFolder, f
 
 
 function SpawnRoom(i)
@@ -24,7 +24,7 @@ function SpawnRoom(i)
 	local startZ = 0
 
 	
-	floorFolder = World.FindObjectByName("Floor "..f)
+	local floorFolder = World.FindObjectByName("Floor "..f)
 	if(floorFolder == nil) then
 		floorFolder = World.SpawnAsset(propNewGroup, {parent = script.parent})
 		floorFolder.name = "Floor "..f
@@ -74,15 +74,7 @@ function SpawnRoom(i)
 	if(i==floor[f].finalRoom) then
 		newPosition = Vector3.New((floor[f].room[i].spawnX+floor[f].room[i].length/2)*xyOffset, (floor[f].room[i].spawnZ+floor[f].room[i].depth/2)*xyOffset, 0)
 		newScale = Vector3.New(1,1,1)
-		if(floor[f].room[i].parentDirection == "north") then
-			newRotation = Rotation.New(0,0,0)
-		elseif(floor[f].room[i].parentDirection == "south") then
-			newRotation = Rotation.New(0,0,180)
-		elseif(floor[f].room[i].parentDirection == "east") then
-			newRotation = Rotation.New(0,0,90)
-		elseif(floor[f].room[i].parentDirection == "west") then
-			newRotation = Rotation.New(0,0,270)
-		end
+		newRotation = Rotation.New(0,0,0)
 		asset = World.SpawnAsset(propElevator, {position = newPosition, scale = newScale, rotation = newRotation})
 		asset.name = "FinalRoom Elevator"
 		asset.parent = roomFolder
@@ -111,10 +103,10 @@ function SpawnRoom(i)
 	local startConnector =0
 	local offset = 0
 	
-	wallsFolder = World.FindObjectByName("Walls "..i)
+	wallsFolder = roomFolder:FindChildByName("Walls "..i)
 	if(wallsFolder == nil) then
-		roomFolder = World.SpawnAsset(propNewGroup, {parent = roomFolder})
-		roomFolder.name = "Walls "..i
+		wallsFolder = World.SpawnAsset(propNewGroup, {parent = roomFolder})
+		wallsFolder.name = "Walls "..i
 	end
 	
 	-- spawn the walls in the [-1,0] south side of the room
@@ -139,9 +131,8 @@ function SpawnRoom(i)
 				newPosition = Vector3.New((floor[f].room[i].spawnX)*xyOffset+startX,(floor[f].room[i].spawnZ+m)*xyOffset+startZ,0)
 				newScale = Vector3.New(1,1,1)
 			end
-			asset = World.SpawnAsset(propWall01, {position = newPosition, rotation = newRotation, scale = newScale})
+			asset = World.SpawnAsset(propWall01, {parent = wallsFolder, position = newPosition, rotation = newRotation, scale = newScale})
 			asset.name = "WallSouth "..m
-			asset.parent = wallsFolder
 		end
 	end
 
@@ -169,9 +160,8 @@ function SpawnRoom(i)
 				newPosition = Vector3.New((floor[f].room[i].spawnX+floor[f].room[i].length-1)*xyOffset+startX,(floor[f].room[i].spawnZ+m)*xyOffset+startZ,0)
 				newScale = Vector3.New(1,1,1)
 			end
-			asset = World.SpawnAsset(propWall01, {position = newPosition, rotation = newRotation, scale = newScale})
+			asset = World.SpawnAsset(propWall01, {parent = wallsFolder,position = newPosition, rotation = newRotation, scale = newScale})
 			asset.name = "WallNorth "..m
-			asset.parent = wallsFolder
 		end
 	end
 
@@ -199,9 +189,8 @@ function SpawnRoom(i)
 				newPosition = Vector3.New((floor[f].room[i].spawnX+m)*xyOffset+startX,(floor[f].room[i].spawnZ)*xyOffset+startZ,0)
 				newScale = Vector3.New(1,1,1)
 			end
-			asset = World.SpawnAsset(propWall01, {position = newPosition, rotation = newRotation, scale = newScale})
+			asset = World.SpawnAsset(propWall01, {parent = wallsFolder, position = newPosition, rotation = newRotation, scale = newScale})
 			asset.name = "WallEast "..m
-			asset.parent = wallsFolder
 			
 		end
 	end
@@ -229,15 +218,11 @@ function SpawnRoom(i)
 				newPosition = Vector3.New((floor[f].room[i].spawnX+m)*xyOffset+startX,(floor[f].room[i].spawnZ+floor[f].room[i].depth-1)*xyOffset+startZ,0)
 				newScale = Vector3.New(1,1,1)
 			end
-			asset = World.SpawnAsset(propWall01, {position = newPosition, rotation = newRotation, scale = newScale})
+			asset = World.SpawnAsset(propWall01, {parent = wallsFolder, position = newPosition, rotation = newRotation, scale = newScale})
 			asset.name = "WallWest "..m
-			asset.parent = wallsFolder
 		end
 	end
 end	
-
-
-
 
 
 function SpawnConnector(i)
@@ -247,6 +232,7 @@ function SpawnConnector(i)
 	local m, asset,assetFolder,connectorFolder
 	local offsetX = 0
 	local offsetY = 0
+	local floorFolder = World.FindObjectByName("Floor "..f)
 	
 	connectorFolder = World.FindObjectByName("Connectors")
 	if(connectorFolder == nil) then
@@ -282,7 +268,7 @@ function SpawnConnector(i)
 				first=0
 				startConnector = m
 			end
-			counter=counter+1
+		counter=counter+1
 		end
 	end
 	
@@ -293,7 +279,7 @@ function SpawnConnector(i)
 				first=0
 				startConnector = m
 			end
-			counter=counter+1
+		counter=counter+1
 		end
 		
 		if(floor[f].room[i].tile[m][floor[f].room[i].depth-1].isConnector == true and floor[f].room[i].tile[m][floor[f].room[i].depth-1].direction.east == true and floor[f].room[i].tile[m][floor[f].room[i].depth-1].parentDirection == "east") then
@@ -301,7 +287,7 @@ function SpawnConnector(i)
 				first=0
 				startConnector = m
 			end
-			counter=counter+1
+		counter=counter+1
 		end
 	end
 	
@@ -321,8 +307,7 @@ function SpawnConnector(i)
 	
 	m=0
 	--spawn connectors along the horizontal axis 
-	if(floor[f].room[i].parentDirection == "south" or floor[f].room[i].parentDirection == "north") then 
-
+	if(floor[f].room[i].parentDirection == "south" or floor[f].room[i].parentDirection == "north") then 		
 		if(counter==1) then
 			--floor
 			newPosition = Vector3.New((floor[f].room[i].spawnX)*xyOffset+offsetX, ((floor[f].room[i].spawnZ+startConnector+(counter/2))*xyOffset)+offsetY, -25)
@@ -360,8 +345,8 @@ function SpawnConnector(i)
 			asset.name = "ConnectorCeiling"
 			asset.parent = assetFolder
 			--doors
-			newPosition = Vector3.New((floor[f].room[i].spawnX)*xyOffset+offsetX, (floor[f].room[i].spawnZ+startConnector)*xyOffset+offsetY, 0)
-			newScale = Vector3.New(1,1,1)
+			newPosition = Vector3.New((floor[f].room[i].spawnX)*xyOffset+offsetX, (floor[f].room[i].spawnZ+startConnector)*xyOffset+offsetY, -40)
+			newScale = Vector3.New(1,1,1.08)
 			newRotation = Rotation.New(0,0,90)
 			asset = World.SpawnAsset(propDoor2x1, {position = newPosition, scale = newScale, rotation = newRotation})
 			asset.name = tostring(i)
@@ -392,8 +377,8 @@ function SpawnConnector(i)
 			asset.name = "ConnectorCeiling"
 			asset.parent = assetFolder
 			--doors
-			newPosition = Vector3.New((floor[f].room[i].spawnX)*xyOffset+offsetX, (floor[f].room[i].spawnZ+startConnector)*xyOffset+offsetY, 0)
-			newScale = Vector3.New(1,1,1)
+			newPosition = Vector3.New((floor[f].room[i].spawnX)*xyOffset+offsetX, (floor[f].room[i].spawnZ+startConnector)*xyOffset+offsetY, -30)
+			newScale = Vector3.New(1,1,1.06)
 			newRotation = Rotation.New(0,0,90)
 			asset = World.SpawnAsset(propDoor4x1, {position = newPosition, scale = newScale, rotation = newRotation})	
 			asset.name = tostring(i)
@@ -424,8 +409,8 @@ function SpawnConnector(i)
 			asset.parent = assetFolder
 			--doors	
 			for m=0,1 do
-				newPosition = Vector3.New((floor[f].room[i].spawnX)*xyOffset+offsetX, (floor[f].room[i].spawnZ+startConnector+m*5)*xyOffset+offsetY, 0)
-				newScale = Vector3.New(1,1,1)
+				newPosition = Vector3.New((floor[f].room[i].spawnX)*xyOffset+offsetX, (floor[f].room[i].spawnZ+startConnector+m*5)*xyOffset+offsetY, -30)
+				newScale = Vector3.New(1,1,1.06)
 				newRotation = Rotation.New(0,0,90)
 				asset = World.SpawnAsset(propDoor4x1, {position = newPosition, scale = newScale, rotation = newRotation})
 				asset.name = tostring(i)
@@ -492,8 +477,8 @@ function SpawnConnector(i)
 			asset.name = "ConnectorCeiling"
 			asset.parent = assetFolder
 			--doors
-			newPosition = Vector3.New((floor[f].room[i].spawnX+startConnector)*xyOffset+offsetX, (floor[f].room[i].spawnZ)*xyOffset+offsetY, 0)
-			newScale = Vector3.New(1,1,1)
+			newPosition = Vector3.New((floor[f].room[i].spawnX+startConnector)*xyOffset+offsetX, (floor[f].room[i].spawnZ)*xyOffset+offsetY, -40)
+			newScale = Vector3.New(1,1,1.08)
 			newRotation = Rotation.New(0,0,0)
 			asset = World.SpawnAsset(propDoor2x1, {position = newPosition, scale = newScale, rotation = newRotation})
 			asset.name = tostring(i)
@@ -524,8 +509,8 @@ function SpawnConnector(i)
 			asset.name = "ConnectorCeiling"
 			asset.parent = assetFolder
 			--doors
-			newPosition = Vector3.New((floor[f].room[i].spawnX+startConnector)*xyOffset+offsetX, (floor[f].room[i].spawnZ)*xyOffset+offsetY, 0)
-			newScale = Vector3.New(1,1,1)
+			newPosition = Vector3.New((floor[f].room[i].spawnX+startConnector)*xyOffset+offsetX, (floor[f].room[i].spawnZ)*xyOffset+offsetY, -30)
+			newScale = Vector3.New(1,1,1.06)
 			newRotation = Rotation.New(0,0,0)
 			asset = World.SpawnAsset(propDoor4x1, {position = newPosition, scale = newScale, rotation = newRotation})	
 			asset.name = tostring(i)
@@ -558,8 +543,8 @@ function SpawnConnector(i)
 			asset.parent = assetFolder
 			--doors	
 			for m=0,1 do
-				newPosition = Vector3.New((floor[f].room[i].spawnX+startConnector+m*5)*xyOffset+offsetX, (floor[f].room[i].spawnZ)*xyOffset+offsetY, 0)
-				newScale = Vector3.New(1,1,1)
+				newPosition = Vector3.New((floor[f].room[i].spawnX+startConnector+m*5)*xyOffset+offsetX, (floor[f].room[i].spawnZ)*xyOffset+offsetY, -30)
+				newScale = Vector3.New(1,1,1.06)
 				newRotation = Rotation.New(0,0,0)
 				asset = World.SpawnAsset(propDoor4x1, {position = newPosition, scale = newScale, rotation = newRotation})	
 				asset.name = tostring(i)
@@ -603,98 +588,6 @@ function PrintLinkedRooms()
 	end
 end
 
-function PlayerCurrentRoom (other)
-	local i = 1
-	local player = other
-	local playerPosition = player:GetWorldPosition()
-
-	while i<=floor[f].roomCount do
-		if(playerPosition.x > floor[f].room[i].spawnX*xyOffset and playerPosition.x < (floor[f].room[i].spawnX+floor[f].room[i].length)*xyOffset) then
-			if(playerPosition.y > floor[f].room[i].spawnZ*xyOffset and playerPosition.y < (floor[f].room[i].spawnZ+floor[f].room[i].depth)*xyOffset) then
-				return i
-			end
-		end
-		i=i+1
-	end
-	return nil
-end
-
-
-
-function UpdateActiveRooms (other, currentFloor)
-	local g = currentFloor
-	local newTask = Task.Spawn(function()
-		local i
-		local m, n, l, s
-		local roomToDestroy, connectorToDestroy
-		for i=1,floor[g].roomCount do
-			if(floor[g].room[i].active == true) then
-				floor[g].room[i].active = false
-			end
-			if(floor[g].room[i].activeConnector == true) then
-				floor[g].room[i].activeConnector = false
-			end
-		end
-		i = PlayerCurrentRoom(other)
-		floor[g].room[i].active = true
-		print("entered Room: "..i)
-		m=0
-		while (floor[g].room[i].linkedRoom[m]~=0) do
-			l = floor[g].room[i].linkedRoom[m]
-			if(floor[g].room[l].active == false) then
-				floor[g].room[l].active = true
-			else
-				SpawnRoom(l)
-			end
-			m=m+1
-		end
-		
-		m=0
-		while (floor[g].room[i].linkedRoom[m]~=0) do
-			l = floor[g].room[i].linkedRoom[m]
-			if(floor[g].room[l].activeConnector == false) then
-				floor[g].room[l].activeConnector = true
-			else
-				if( Object.IsValid(World.FindObjectByName("Connector "..i)) == false ) then 
-					SpawnConnector(l) 
-				end
-			end
-			
-			n=0
-			while (floor[g].room[l].linkedRoom[n]~=0) do
-				s = floor[g].room[l].linkedRoom[n]
-				if(floor[g].room[s].activeConnector == false) then
-					floor[g].room[s].activeConnector = true
-				else
-					if( Object.IsValid(World.FindObjectByName("Connector "..i)) == false ) then 
-						SpawnConnector(s) 
-					end
-					--if(not World.FindObjectByName("Room "..s.." ParentConnector")) then SpawnConnector(s) end
-				end
-				n=n+1
-			end
-			m=m+1
-		end
-		
-		--destroy inactive rooms
-		for i=1,floor[g].roomCount do
-			if(floor[g].room[i].active == false) then
-				floor[g].room[i].active = nil
-				roomToDestroy = World.FindObjectByName("Room "..i)
-				roomToDestroy:Destroy()
-			end
-		end
-		
-		--destroy inactive connectors
-		for i=1,floor[g].roomCount do
-			if(floor[g].room[i].activeConnector == false) then
-				floor[g].room[i].activeConnector = nil
-				connectorToDestroy = World.FindObjectByName("Connector "..i)
-				connectorToDestroy:Destroy()
-			end
-		end
-	end)
-end
 
 function SpawnLevel(levelToSpawn)
 	floor = script.parent.parent.serverUserData.floor
@@ -702,21 +595,19 @@ function SpawnLevel(levelToSpawn)
 	PrintLinkedRooms()
 	print()
 	print("*********************************")
-	print("*       SPAWNING "..floor[f].roomCount.." rooms       *")
+	print("*       MAX Floor "..f.." rooms: "..floor[f].roomCount.."   *")
 	print("*********************************")
-	for i=1,3 do
-		SpawnRoom(i)
-		Task.Wait()
-	end
-	SpawnConnector(2)
-	SpawnConnector(3)
+	SpawnRoom(1)
+	--print("SPAWNING CONNECTORS 2 AND 3")
+	--SpawnConnector(2)
+	--SpawnConnector(3)
 end
 
 
-Task.Wait(0.5)
 --BROADCAST LISTENERS----------------------------------
 Events.Connect("SpawnLevel", SpawnLevel)
-Events.Connect("UpdateActiveRooms", UpdateActiveRooms)
+Events.Connect("SpawnRoom",SpawnRoom)
+Events.Connect("SpawnConnector",SpawnConnector)
 -------------------------------------------------------
 
 

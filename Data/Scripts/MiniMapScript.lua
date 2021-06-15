@@ -29,7 +29,7 @@ end
 --local room = script.parent.parent.serverUserData.room
 
 function SpawnMinimap()
-	print("LEVELGENERATED FIRED")
+	print("MINI MAP SPAWNING")
 	minimapPanelSpawned = true
 	MinimapPanel = World.SpawnAsset(propMinimapPanelNoClipping)
 	MinimapPanel.parent = script.parent

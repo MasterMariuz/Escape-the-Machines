@@ -12,12 +12,8 @@ if(Object.IsValid(script.parent.parent.parent)) then
 else 
 	floorFolder = script.parent.parent
 end
-print("floorLevel number: "..floorFolder.name)
-local floorLevel = CoreString.Split(floorFolder.name," ")
-print("floorLevel number: "..floorLevel)
 
-function CloseElevatorWalls(other)
-	print("Final Room Elevator Reached!")
+function CloseElevatorWalls()
 	glassWalls.visibility = Visibility.FORCE_ON
 	local timeToClose=15 --in frames
 	for m=1,timeToClose do
@@ -34,15 +30,13 @@ function CloseElevatorWalls(other)
 		newPosition.z = newPosition.z +600/timeToClose		
 		elevatorWalls:SetPosition(newPosition)
 		Task.Wait()
-		print("moving elevator frame: "..m)
 	end
-	print("LEVEL COMPLETE!")
-	Events.Broadcast("FinalRoomElevatorReached",other)
 end
 
 
 function StepOnElevatorLight(trigger,other)
 	if(other:IsA("Player")) then 
+		Events.BroadcastToPlayer(other,"ToggleLevelTimer") --pause timer from client UI
 		m=0
 		lightOn = true
 		if(Object.IsValid(lightsource)==true) then
@@ -54,7 +48,8 @@ function StepOnElevatorLight(trigger,other)
 		end
 		
 		if(elevatorWalls:GetPosition() == Vector3.New(0,0,-300)) then
-			CloseElevatorWalls(other)
+			CloseElevatorWalls()
+			Events.Broadcast("FinalRoomElevatorReached",other) --connect with GameManager (server)
 		end
 	end
 end

@@ -15,7 +15,7 @@ Assets {
             Z: 1
           }
         }
-        ParentId: 13744475649720159847
+        ParentId: 5088372968864632401
         ChildIds: 2780875483762202087
         ChildIds: 9763632529903814758
         ChildIds: 11879425704859131740
@@ -910,7 +910,6 @@ Assets {
           }
         }
         ParentId: 7502183718665631133
-        ChildIds: 3132092024010966963
         Collidable_v2 {
           Value: "mc:ecollisionsetting:inheritfromparent"
         }
@@ -979,9 +978,14 @@ Assets {
               Value: "mc:everticaljustification:center"
             }
             ShadowColor {
+              R: 0.0364583321
+              G: 0.0364583321
+              B: 0.0364583321
               A: 1
             }
             ShadowOffset {
+              X: 3
+              Y: 3
             }
           }
           AnchorLayout {
@@ -995,39 +999,6 @@ Assets {
                 Value: "mc:euianchor:topcenter"
               }
             }
-          }
-        }
-      }
-      Objects {
-        Id: 3132092024010966963
-        Name: "GoButtonScript"
-        Transform {
-          Location {
-          }
-          Rotation {
-          }
-          Scale {
-            X: 1
-            Y: 1
-            Z: 1
-          }
-        }
-        ParentId: 4881499467814380388
-        Collidable_v2 {
-          Value: "mc:ecollisionsetting:inheritfromparent"
-        }
-        Visible_v2 {
-          Value: "mc:evisibilitysetting:inheritfromparent"
-        }
-        CameraCollidable {
-          Value: "mc:ecollisionsetting:inheritfromparent"
-        }
-        EditorIndicatorVisibility {
-          Value: "mc:eindicatorvisibility:visiblewhenselected"
-        }
-        Script {
-          ScriptAsset {
-            Id: 8888128384014916350
           }
         }
       }
